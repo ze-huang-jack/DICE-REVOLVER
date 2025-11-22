@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Difficulty } from '../types';
-import { Skull, Award, Zap, Crosshair, Cpu, Shield, Heart, Terminal } from 'lucide-react';
+import { Skull, Award, Zap, Crosshair, Cpu, Shield, Heart, Terminal, Infinity, BookOpen } from 'lucide-react';
 
 interface StartScreenProps {
   onStart: (diff: Difficulty) => void;
   highScore: number;
+  onOpenEncyclopedia?: () => void;
 }
 
 // Simulated Background Component
@@ -38,7 +40,7 @@ const SimulatedBattle = () => {
     )
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore }) => {
+export const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, onOpenEncyclopedia }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -74,7 +76,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore }) 
                 <div className="flex justify-between items-center mt-6 px-8">
                     <div className="h-[1px] w-12 bg-cyan-800"></div>
                     <div className="mx-4 text-[9px] font-mono tracking-[0.3em] text-cyan-600 uppercase border border-cyan-900/50 px-2 py-1 rounded bg-black/40 backdrop-blur-sm">
-                        Roguelike_Deckbuilder_v1.0
+                        Roguelike_Deckbuilder_v1.2
                     </div>
                     <div className="h-[1px] w-12 bg-cyan-800"></div>
                 </div>
@@ -120,7 +122,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore }) 
                             <div className="flex items-center gap-3 text-xs text-slate-400 font-mono mt-1 group-hover:text-cyan-100">
                                 <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> 200 HP</span>
                                 <span className="w-1 h-1 bg-cyan-600 rounded-full"></span>
-                                <span className="flex items-center gap-1"><Crosshair className="w-3 h-3" /> STANDARD</span>
+                                <span className="flex items-center gap-1"><Terminal className="w-3 h-3" /> 60 LEVELS</span>
                             </div>
                         </div>
                         <Zap className="w-8 h-8 text-cyan-900 group-hover:text-cyan-400 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
@@ -157,13 +159,56 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore }) 
                     </div>
                 </button>
 
+                {/* ENDLESS BUTTON */}
+                <button 
+                    onClick={() => onStart('ENDLESS')}
+                    className="w-full group relative"
+                >
+                     <div className="absolute inset-0 bg-purple-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     
+                     <svg className="absolute inset-0 w-full h-full text-purple-900/50 group-hover:text-purple-500 transition-colors duration-300" viewBox="0 0 400 80" preserveAspectRatio="none">
+                        <path d="M20,0 L380,0 L400,20 L400,60 L380,80 L20,80 L0,60 L0,20 Z" fill="rgba(10,0,20,0.6)" stroke="currentColor" strokeWidth="1"/>
+                    </svg>
+
+                    <div className="relative h-20 flex items-center justify-between px-8">
+                        <div className="flex flex-col items-start z-10">
+                             <div className="text-3xl font-black italic text-purple-600 group-hover:text-purple-400 tracking-tighter transition-colors flex items-center gap-2">
+                                ENDLESS <span className="text-xs not-italic font-mono text-purple-900 font-normal bg-purple-950/30 px-1 rounded border border-purple-900 group-hover:text-purple-300 group-hover:border-purple-500">// 无尽模式</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-purple-900/70 font-mono mt-1 group-hover:text-purple-200">
+                                <span className="flex items-center gap-1"><Infinity className="w-3 h-3" /> INFINITE</span>
+                                <span className="w-1 h-1 bg-purple-600 rounded-full"></span>
+                                <span className="flex items-center gap-1"><Skull className="w-3 h-3" /> HARDCORE</span>
+                            </div>
+                        </div>
+                        <Infinity className="w-8 h-8 text-purple-900 group-hover:text-purple-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-180" />
+                    </div>
+                </button>
+
+                {/* ENCYCLOPEDIA BUTTON */}
+                <button 
+                    onClick={onOpenEncyclopedia}
+                    className="w-full group relative mt-2 opacity-80 hover:opacity-100"
+                >
+                     <div className="absolute inset-0 bg-slate-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     
+                     <svg className="absolute inset-0 w-full h-full text-slate-800/80 group-hover:text-slate-700 transition-colors duration-300" viewBox="0 0 400 60" preserveAspectRatio="none">
+                        <path d="M0,0 L400,0 L400,60 L0,60 Z" fill="rgba(0,0,0,0.6)" stroke="currentColor" strokeWidth="1"/>
+                    </svg>
+
+                    <div className="relative h-14 flex items-center justify-center px-8 gap-3 text-slate-400 group-hover:text-cyan-400 transition-colors">
+                        <BookOpen className="w-5 h-5" />
+                        <span className="font-mono font-bold uppercase tracking-[0.2em] text-sm">Data Codex // 图鉴</span>
+                    </div>
+                </button>
+
             </div>
 
             {/* Footer */}
             <div className="mt-16 flex items-center gap-4 text-[10px] text-slate-700 font-mono uppercase tracking-widest">
                  <span className="flex items-center gap-1"><Terminal className="w-3 h-3" /> SYS_READY</span>
                  <span>•</span>
-                 <span>NET_VER 0.9.1</span>
+                 <span>NET_VER 1.2.0</span>
             </div>
 
         </div>

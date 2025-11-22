@@ -36,7 +36,7 @@ const IntentIcon = ({ intent }: { intent: EnemyIntent }) => {
     } else if (intent.type === 'AOE_GLITCH') {
         icon = <BugIcon className="w-4 h-4 text-green-400" />;
         colorClass = "border-green-500/30 bg-green-950/80 text-green-300";
-    } else if (intent.type === 'DESTROY_SLOT') {
+    } else if (intent.type === 'SEAL_SLOT') {
         icon = <AlertOctagonIcon className="w-4 h-4 text-orange-500 animate-pulse" />;
         colorClass = "border-orange-500/30 bg-orange-950/80 text-orange-400";
     } else if (intent.type === 'COMBO') {

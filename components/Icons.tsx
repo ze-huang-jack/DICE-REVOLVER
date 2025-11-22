@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Lock, Unlock, RotateCw, Skull, Crosshair, Coins, ShoppingBag, Plus, Zap, Heart, Shield, Sword, Bug, Cpu, Biohazard, Activity, Target, Fingerprint, Layers, WifiOff, AlertOctagon, ShieldAlert, ZapOff } from 'lucide-react';
+import { Lock, Unlock, RotateCw, Skull, Crosshair, Coins, ShoppingBag, Plus, Zap, Heart, Shield, Sword, Bug, Cpu, Biohazard, Activity, Target, Fingerprint, Layers, WifiOff, AlertOctagon, ShieldAlert, ZapOff, Flame, Star, Anchor, BookOpen } from 'lucide-react';
 
 // --- UI Icons (Lucide) ---
 export const LockIcon = ({ className }: { className?: string }) => <Lock className={className} />;
@@ -24,6 +24,7 @@ export const WifiOffIcon = ({ className }: { className?: string }) => <WifiOff c
 export const AlertOctagonIcon = ({ className }: { className?: string }) => <AlertOctagon className={className} />;
 export const ShieldAlertIcon = ({ className }: { className?: string }) => <ShieldAlert className={className} />;
 export const ZapOffIcon = ({ className }: { className?: string }) => <ZapOff className={className} />;
+export const BookIcon = ({ className }: { className?: string }) => <BookOpen className={className} />;
 
 // --- WEAPON ICONS (Custom SVGs) ---
 
@@ -137,6 +138,15 @@ export const UziIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+export const TwinFangIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path d="M4 8l4 10" />
+    <path d="M20 8l-4 10" />
+    <path d="M4 8h16" />
+    <path d="M12 4v16" strokeDasharray="2 2"/>
+  </svg>
+);
+
 export const ShotgunIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
     <rect x="3" y="7" width="18" height="4" rx="1" />
@@ -164,5 +174,13 @@ export const CrossbowIcon = ({ className }: { className?: string }) => (
     <line x1="5" y1="7" x2="5" y2="17" strokeWidth="1.5" />
     <line x1="19" y1="7" x2="19" y2="17" strokeWidth="1.5" />
     <circle cx="12" cy="20" r="2" fill="currentColor" />
+  </svg>
+);
+
+export const ExcaliburIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path d="M12 22V2M8 6h8" strokeWidth="3" />
+    <path d="M12 2l-4 4h8l-4-4z" fill="currentColor" />
+    <circle cx="12" cy="18" r="2" />
   </svg>
 );

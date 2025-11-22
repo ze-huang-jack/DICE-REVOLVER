@@ -259,9 +259,64 @@ const BossHydra = () => (
     </svg>
 );
 
+const BossFinal = () => (
+    <svg viewBox="0 0 300 300" className="w-full h-full drop-shadow-[0_0_40px_rgba(255,255,255,0.5)]">
+        <defs>
+            <radialGradient id="omegaGrad" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="#fff" />
+                <stop offset="40%" stopColor="#facc15" />
+                <stop offset="100%" stopColor="#000" />
+            </radialGradient>
+            <filter id="chaosNoise">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="5" result="noise"/>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10"/>
+            </filter>
+        </defs>
+        <g transform="translate(150, 150)">
+            {/* Background Chaos Ring */}
+            <circle r="120" fill="none" stroke="#facc15" strokeWidth="1" opacity="0.2" strokeDasharray="2 4">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="60s" repeatCount="indefinite" />
+            </circle>
+             <circle r="110" fill="none" stroke="#facc15" strokeWidth="1" opacity="0.2" strokeDasharray="10 20">
+                 <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="40s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Core Shapes */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite" />
+                <path d="M0,-80 L20,-20 L80,0 L20,20 L0,80 L-20,20 L-80,0 L-20,-20 Z" fill="none" stroke="#fff" strokeWidth="2" opacity="0.6" />
+                <rect x="-50" y="-50" width="100" height="100" fill="none" stroke="#facc15" strokeWidth="1" transform="rotate(45)">
+                    <animate attributeName="stroke-width" values="1;3;1" dur="2s" repeatCount="indefinite" />
+                </rect>
+            </g>
+
+            {/* The Eye of Omega */}
+            <g filter="url(#chaosNoise)">
+                 <circle r="40" fill="url(#omegaGrad)">
+                    <animate attributeName="r" values="40;45;40" dur="1s" repeatCount="indefinite" />
+                 </circle>
+            </g>
+
+            {/* Orbital Rings */}
+            <ellipse cx="0" cy="0" rx="140" ry="20" fill="none" stroke="#facc15" strokeWidth="1" transform="rotate(30)">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="5s" repeatCount="indefinite" />
+            </ellipse>
+            <ellipse cx="0" cy="0" rx="140" ry="20" fill="none" stroke="#facc15" strokeWidth="1" transform="rotate(-30)">
+                 <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="7s" repeatCount="indefinite" />
+            </ellipse>
+
+            {/* Glitch artifacts */}
+            <rect x="-150" y="-2" width="300" height="4" fill="#fff" opacity="0">
+                <animate attributeName="opacity" values="0;0.5;0" dur="0.1s" repeatCount="indefinite" begin="0s" />
+                <animate attributeName="y" values="-150;150" dur="3s" repeatCount="indefinite" />
+            </rect>
+        </g>
+    </svg>
+);
 
 const getBossVisual = (type: string) => {
     switch(type) {
+        case 'BOSS_FINAL': return <BossFinal />;
         case 'BOSS_5': return <BossHydra />;
         case 'BOSS_4': return <BossTitan />;
         case 'BOSS_3': return <BossAlgorithm />;

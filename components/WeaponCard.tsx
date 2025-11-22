@@ -5,7 +5,7 @@ import {
   AimIcon, 
   DoomsdayIcon, FlamethrowerIcon, RpgIcon, PlasmaIcon, VoidIcon, 
   ShivIcon, GrenadeIcon, UziIcon, ShotgunIcon, RevolverIcon, 
-  OmniBlasterIcon, LinearRailIcon, TacticalIcon, BiohazardIcon, LockIcon, CrossbowIcon
+  OmniBlasterIcon, LinearRailIcon, TacticalIcon, BiohazardIcon, LockIcon, CrossbowIcon, TwinFangIcon, ExcaliburIcon
 } from './Icons';
 
 interface WeaponCardProps {
@@ -16,34 +16,95 @@ interface WeaponCardProps {
   level?: number;
 }
 
-const getWeaponIcon = (id: WeaponType) => {
+export const getWeaponIcon = (id: WeaponType) => {
     switch(id) {
-        case 'OMNI_BLASTER': return <OmniBlasterIcon className="w-full h-full" />;
-        case 'LINEAR_RAIL': return <LinearRailIcon className="w-full h-full" />;
-        case 'TACTICAL_EXEC': return <TacticalIcon className="w-full h-full" />;
-        case 'DOOMSDAY': return <DoomsdayIcon className="w-full h-full" />;
+        // --- TIER 1 ---
+        case 'SINGULARITY': return <OmniBlasterIcon className="w-full h-full" />;
+        case 'QUADRA': return <GrenadeIcon className="w-full h-full" />;
+        case 'TRINITY': return <RpgIcon className="w-full h-full" />;
+        case 'FLUX_BEAM': return <LinearRailIcon className="w-full h-full" />;
+        case 'STRIKER': return <UziIcon className="w-full h-full" />;
+        case 'VECTOR': return <UziIcon className="w-full h-full" />;
+        case 'BUCKSHOT': return <ShotgunIcon className="w-full h-full" />;
+        case 'PEACEMAKER': return <RevolverIcon className="w-full h-full" />;
         case 'FLAMETHROWER': return <FlamethrowerIcon className="w-full h-full" />;
-        case 'RPG': return <RpgIcon className="w-full h-full" />;
+
+        // --- TIER 2 (EVOLUTIONS) ---
+        // PEACEMAKER
+        case 'CROSSBOW': 
+        case 'BOUNTY_HUNTER':
+        case 'DESPERADO': return <CrossbowIcon className="w-full h-full" />;
+        
+        // BUCKSHOT
+        case 'MIDAS_HAND': 
+        case 'TITAN_GRIP':
+        case 'BUCKSHOT_NOVA': return <ShotgunIcon className="w-full h-full" />;
+        
+        // VECTOR
+        case 'TWIN_FANG': 
+        case 'AKIMBO':
+        case 'RICOCHET': return <TwinFangIcon className="w-full h-full" />;
+        
+        // TRINITY
+        case 'TACTICAL_EXEC': 
+        case 'VAMPIRE_FANG':
+        case 'TRI_FORCE': return <TacticalIcon className="w-full h-full" />;
+        
+        // QUADRA
+        case 'OMNI_BURST': 
+        case 'PLASMA_CANNON':
+        case 'RAILGUN': return <GrenadeIcon className="w-full h-full" />;
+
+        // SINGULARITY
+        case 'EVENT_HORIZON': 
+        case 'BLACK_HOLE':
+        case 'SUPERNOVA': return <OmniBlasterIcon className="w-full h-full" />;
+
+        // STRIKER
+        case 'CHRONOS': 
+        case 'ASSASSIN':
+        case 'FLASH_STEP': return <UziIcon className="w-full h-full" />;
+
+        // FLUX BEAM
+        case 'PRISM_BEAM': 
+        case 'ORBITAL_CANNON':
+        case 'HYPER_BEAM': return <LinearRailIcon className="w-full h-full" />;
+
+        // FLAMETHROWER
+        case 'INFERNO': 
+        case 'MELTDOWN':
+        case 'NAPALM': return <FlamethrowerIcon className="w-full h-full" />;
+
+        // ULTIMATES
+        case 'EXCALIBUR': return <ExcaliburIcon className="w-full h-full" />;
+        case 'AEGIS_SYSTEM': return <ShieldIcon className="w-full h-full" />;
+        case 'RAGNAROK': return <DoomsdayIcon className="w-full h-full" />;
+        
+        // LEGACY
+        case 'DOOMSDAY': return <DoomsdayIcon className="w-full h-full" />;
         case 'PLASMA': return <PlasmaIcon className="w-full h-full" />;
         case 'VOID': return <VoidIcon className="w-full h-full" />;
         case 'SHIV': return <ShivIcon className="w-full h-full" />;
-        case 'GRENADE': return <GrenadeIcon className="w-full h-full" />;
-        case 'UZI': return <UziIcon className="w-full h-full" />;
-        case 'SHOTGUN': return <ShotgunIcon className="w-full h-full" />;
-        case 'REVOLVER': return <RevolverIcon className="w-full h-full" />;
-        case 'CROSSBOW': return <CrossbowIcon className="w-full h-full" />;
-        case 'MIDAS_HAND': return <BiohazardIcon className="w-full h-full" />; 
+        
         default: return <AimIcon className="w-full h-full" />;
     }
 }
+
+// Helper icon for Ultimate visual mapping
+const ShieldIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
 
 export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false, isFiring = false, isDisabled = false, level = 1 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   // Dynamic Multiplier Display
   const getMultDisplay = () => {
-      if (weapon.id === 'OMNI_BLASTER') return '3xN';
-      if (weapon.id === 'LINEAR_RAIL') return '5xL';
+      if (weapon.id === 'SINGULARITY') return '50+';
+      if (weapon.id === 'FLUX_BEAM') return '40+';
+      if (weapon.baseMult >= 100) return 'MAX';
       return `x${weapon.baseMult}`;
   };
 
@@ -111,12 +172,11 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
                     </div>
                 )}
 
-                {/* TACTICAL OVERLAY (Hover or Click) */}
-                {isTactical && isHovered && weapon.description && !isDisabled ? (
+                {/* TACTICAL/DESC OVERLAY (Hover or Click) */}
+                {(isTactical || weapon.description) && isHovered && !isDisabled ? (
                     <div className="absolute inset-0 bg-slate-950/95 z-30 p-1.5 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
-                        <div className="text-[8px] text-green-500 font-mono uppercase mb-1 border-b border-green-500/30 w-full pb-0.5">当前任务</div>
+                        <div className="text-[8px] text-green-500 font-mono uppercase mb-1 border-b border-green-500/30 w-full pb-0.5">{isTactical ? '当前任务' : '效果'}</div>
                         <div className="text-xs font-bold text-white leading-tight my-auto">{weapon.description}</div>
-                        <div className="mt-auto text-[8px] text-slate-400 w-full border-t border-white/10 pt-1">点击隐藏</div>
                     </div>
                 ) : null}
 
@@ -135,7 +195,7 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
                             textShadow: isActive && !isDisabled ? `0 0 15px ${weapon.color}` : 'none'
                         }}
                     >
-                        <span className="text-xl align-top opacity-80 mr-0.5">{getMultDisplay().startsWith('x') ? '' : 'x'}</span>
+                        <span className="text-xl align-top opacity-80 mr-0.5">{getMultDisplay().startsWith('x') || getMultDisplay() === 'MAX' ? '' : 'x'}</span>
                         {getMultDisplay().replace('x', '')}
                     </div>
                 </div>

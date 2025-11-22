@@ -8,10 +8,11 @@ export interface DieData {
   value: DieValue;
   isLocked: boolean;
   isRolling: boolean;
+  sealedTurns: number; 
 }
 
 export type GameStatus = 'START' | 'PLAYING' | 'GAMEOVER' | 'VICTORY';
-export type Difficulty = 'ROOKIE' | 'CYBERPSYCH';
+export type Difficulty = 'ROOKIE' | 'CYBERPSYCH' | 'ENDLESS';
 
 export interface SessionStats {
   turnsTaken: number;
@@ -19,14 +20,87 @@ export interface SessionStats {
   enemiesKilled: number;
 }
 
+export type WeaponTriggerType = 
+    | 'SCATTER' 
+    | 'PAIR' 
+    | 'TWO_PAIR' 
+    | 'THREE_KIND' 
+    | 'FOUR_KIND' 
+    | 'FIVE_KIND' 
+    | 'SIX_KIND'        // New: Event Horizon
+    | 'SMALL_STR' 
+    | 'BIG_STR' 
+    | 'SUPER_STR'       // New: Prism Beam (1-6)
+    | 'FULL_HOUSE'
+    | 'DOUBLE_TRIPLE'   // New: Inferno (3 of a kind x 2)
+    | 'FLAVOR';
+
 export type WeaponType = 
-  | 'REVOLVER' | 'SHOTGUN' | 'UZI' 
-  | 'OMNI_BLASTER' 
-  | 'LINEAR_RAIL'   
-  | 'TACTICAL_EXEC'
-  | 'GRENADE' | 'FLAMETHROWER' | 'RPG'
-  | 'PLASMA' | 'VOID' | 'DOOMSDAY' | 'SHIV'
-  | 'MIDAS_HAND' | 'CROSSBOW' | 'CHRONOS';
+  // --- TIER 1 (STARTERS) ---
+  | 'PEACEMAKER'  // Scatter
+  | 'BUCKSHOT'    // Pair
+  | 'VECTOR'      // Two Pair
+  | 'TRINITY'     // 3 of a Kind
+  | 'QUADRA'      // 4 of a Kind
+  | 'SINGULARITY' // 5 of a Kind
+  | 'STRIKER'     // Small Straight
+  | 'FLUX_BEAM'   // Big Straight
+  | 'FLAMETHROWER'// Full House
+
+  // --- TIER 2 (EVOLUTIONS - 3 Branches Each) ---
+  
+  // PEACEMAKER (Scatter)
+  | 'CROSSBOW'       // Auto-fire
+  | 'BOUNTY_HUNTER'  // Gold on hit
+  | 'DESPERADO'      // Dmg up when rerolls empty
+
+  // BUCKSHOT (Pair)
+  | 'MIDAS_HAND'     // Gold scaling
+  | 'TITAN_GRIP'     // Huge mult on 6s
+  | 'BUCKSHOT_NOVA'  // HP scaling
+
+  // VECTOR (Two Pair)
+  | 'TWIN_FANG'      // Triggers twice
+  | 'AKIMBO'         // Reroll scaling
+  | 'RICOCHET'       // 4-of-a-kind counts as 2 pair + Bonus
+
+  // TRINITY (3 Kind)
+  | 'TACTICAL_EXEC'  // Mission
+  | 'VAMPIRE_FANG'   // Lifesteal
+  | 'TRI_FORCE'      // Odd number bonus
+
+  // QUADRA (4 Kind)
+  | 'OMNI_BURST'     // 4/5/6 Kind trigger
+  | 'PLASMA_CANNON'  // Flat Chip bonus
+  | 'RAILGUN'        // Ignore Shield/Defense (High Mult)
+
+  // SINGULARITY (5 Kind)
+  | 'EVENT_HORIZON'  // 6 Kind
+  | 'BLACK_HOLE'     // Shield Generation
+  | 'SUPERNOVA'      // Instant Kill / Massive Dmg on 6s
+
+  // STRIKER (Small Str)
+  | 'CHRONOS'        // Re-trigger round
+  | 'ASSASSIN'       // 100% Crit
+  | 'FLASH_STEP'     // Bonus if Turn 1
+
+  // FLUX_BEAM (Big Str)
+  | 'PRISM_BEAM'     // 1-6 Trigger
+  | 'ORBITAL_CANNON' // Turn scaling
+  | 'HYPER_BEAM'     // HP Cost for massive Dmg
+
+  // FLAMETHROWER (Full House)
+  | 'INFERNO'        // Double Triple
+  | 'MELTDOWN'       // Shield to Dmg
+  | 'NAPALM'         // High Mult
+
+  // --- TIER 3 (ULTIMATES - Level 50) ---
+  | 'EXCALIBUR' 
+  | 'AEGIS_SYSTEM'
+  | 'RAGNAROK'
+
+  // --- FLAVOR (Legacy/Shop only if re-enabled) ---
+  | 'PLASMA' | 'VOID' | 'DOOMSDAY' | 'SHIV';
 
 export interface CyberwareDef {
   id: string;
@@ -46,7 +120,7 @@ export interface BossModifier {
   effectId: 'NONE' | 'DAMPENER' | 'GLITCH' | 'FIREWALL';
 }
 
-export type EnemyActionType = 'ATTACK' | 'PIERCING' | 'AOE_GLITCH' | 'CHARGE' | 'DESTROY_SLOT' | 'COMBO' | 'JAM_WEAPON';
+export type EnemyActionType = 'ATTACK' | 'PIERCING' | 'AOE_GLITCH' | 'CHARGE' | 'SEAL_SLOT' | 'COMBO' | 'JAM_WEAPON';
 
 export interface EnemyIntent {
   type: EnemyActionType;
@@ -82,6 +156,7 @@ export interface GameState {
   enemyType: string; 
   bossModifier: BossModifier;
   enemyIntent: EnemyIntent;
+  bossPhase: number; // 1 = Normal, 2 = Resurrected (Lv 60)
   
   // Player
   playerHp: number;
@@ -100,7 +175,10 @@ export interface GameState {
 
 export interface WeaponDef {
   id: WeaponType;
+  parentId?: WeaponType; // The weapon this evolved from
   name: string;
+  triggerType: WeaponTriggerType; // Logic mapping
+  evolution?: WeaponType[]; // REMOVED SINGLE, NOW ARRAY OF OPTIONS (Logically handled in App)
   req: string;
   baseChips: number;
   baseMult: number; 
@@ -158,8 +236,8 @@ export interface ShopItem {
   data?: any;
 }
 
-export type RewardRarity = 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'CORRUPTED' | 'BOSS_SPECIAL';
-export type RewardType = 'STAT_UP' | 'CYBERWARE' | 'WEAPON_UP' | 'MECHANIC' | 'ARTIFACT' | 'BOSS_ARTIFACT';
+export type RewardRarity = 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'CORRUPTED' | 'BOSS_SPECIAL' | 'ULTIMATE';
+export type RewardType = 'STAT_UP' | 'CYBERWARE' | 'WEAPON_UP' | 'MECHANIC' | 'ARTIFACT' | 'BOSS_ARTIFACT' | 'WEAPON_EVO';
 
 export interface RewardOption {
   id: string;

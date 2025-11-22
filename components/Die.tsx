@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { DieData } from '../types';
-import { Lock, RefreshCw } from 'lucide-react';
+import { Lock, RefreshCw, ShieldAlert } from 'lucide-react';
 
 interface DieProps {
   data: DieData;
@@ -80,7 +81,8 @@ const FaceContent = ({ value }: { value: number }) => {
 };
 
 export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
-  const { id, value, isLocked, isRolling } = data;
+  const { id, value, isLocked, isRolling, sealedTurns } = data;
+  const isSealed = sealedTurns > 0;
 
   const getRotation = (val: number) => {
       if (val === 0) return 'rotateX(0deg) rotateY(0deg)';
@@ -97,8 +99,8 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
 
   return (
     <div 
-        className={`relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 perspective-[800px] group ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} 
-        onClick={() => !disabled && value !== 0 && toggleLock(id)}
+        className={`relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 perspective-[800px] group ${disabled || isSealed ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} 
+        onClick={() => !disabled && !isSealed && value !== 0 && toggleLock(id)}
     >
       
       {/* Lock Indicator */}
@@ -107,6 +109,16 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
               <Lock className="w-3 h-3" />
           </div>
       </div>
+
+      {/* Sealed Indicator */}
+      {isSealed && (
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-30 animate-bounce">
+               <div className="bg-red-600 text-white px-1.5 py-0.5 rounded shadow-[0_0_8px_#dc2626] flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3" />
+                  <span className="text-[8px] font-bold">{sealedTurns}</span>
+               </div>
+          </div>
+      )}
 
       {/* The Cube */}
       <div 
@@ -120,8 +132,12 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
       >
           {value === 0 ? (
               // Empty State (Wireframe Hologram)
-              <div className="absolute inset-0 border-2 border-dashed border-slate-800 bg-slate-900/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                  <RefreshCw className="w-6 h-6 text-slate-700 animate-spin-slow" />
+              <div className={`absolute inset-0 border-2 border-dashed ${isSealed ? 'border-red-600 bg-red-900/20' : 'border-slate-800 bg-slate-900/20'} rounded-lg flex items-center justify-center backdrop-blur-sm`}>
+                  {isSealed ? (
+                      <ShieldAlert className="w-6 h-6 text-red-500 animate-pulse" />
+                  ) : (
+                      <RefreshCw className="w-6 h-6 text-slate-700 animate-spin-slow" />
+                  )}
               </div>
           ) : (
               <>
@@ -133,11 +149,24 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
                 <div className="die-face die-bottom"><FaceContent value={4} /></div>
               </>
           )}
+
+          {/* Sealed Overlay for value face */}
+          {isSealed && value !== 0 && (
+              <div className="absolute inset-0 z-40 bg-red-950/60 border-2 border-red-500 rounded-lg flex items-center justify-center" style={{ transform: 'translateZ(2.6rem)' }}>
+                   <ShieldAlert className="w-8 h-8 text-red-500 animate-pulse" />
+              </div>
+          )}
       </div>
         
-      {isLocked && (
+      {isLocked && !isSealed && (
           <div className="absolute inset-0 rounded-lg border-2 border-pink-500/50 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.3)] animate-pulse z-10 pointer-events-none"
                style={{ transform: 'scale(1.1)' }}>
+          </div>
+      )}
+      
+      {isSealed && (
+          <div className="absolute inset-0 rounded-lg border-2 border-red-600 bg-red-900/20 shadow-[0_0_15px_rgba(220,38,38,0.5)] z-10 pointer-events-none"
+             style={{ transform: 'scale(1.1)' }}>
           </div>
       )}
     </div>
