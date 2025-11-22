@@ -14,6 +14,9 @@ interface WeaponCardProps {
   isFiring?: boolean;
   isDisabled?: boolean;
   level?: number;
+  isTriggered?: boolean; 
+  effectiveChips?: number;
+  effectiveMult?: number;
 }
 
 export const getWeaponIcon = (id: WeaponType) => {
@@ -97,18 +100,25 @@ const ShieldIcon = ({ className }: { className?: string }) => (
     </svg>
   );
 
-export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false, isFiring = false, isDisabled = false, level = 1 }) => {
+export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false, isFiring = false, isDisabled = false, level = 1, isTriggered = false, effectiveChips, effectiveMult }) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Use effective stats if provided, otherwise base
+  const displayMultVal = effectiveMult !== undefined ? effectiveMult : weapon.baseMult;
+  const displayChipsVal = effectiveChips !== undefined ? effectiveChips : weapon.baseChips;
+  const isBuffedMult = effectiveMult !== undefined && effectiveMult > weapon.baseMult;
+  const isBuffedChips = effectiveChips !== undefined && effectiveChips > weapon.baseChips;
 
   // Dynamic Multiplier Display
   const getMultDisplay = () => {
       if (weapon.id === 'SINGULARITY') return '50+';
       if (weapon.id === 'FLUX_BEAM') return '40+';
-      if (weapon.baseMult >= 100) return 'MAX';
-      return `x${weapon.baseMult}`;
+      if (displayMultVal >= 100) return 'MAX';
+      return `x${displayMultVal}`;
   };
 
   const isTactical = weapon.id === 'TACTICAL_EXEC';
+  const isUltimate = weapon.req === 'ULTIMATE' || ['EXCALIBUR', 'AEGIS_SYSTEM', 'RAGNAROK'].includes(weapon.id);
 
   return (
     <div 
@@ -117,6 +127,7 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
             transition-all duration-200 select-none
             ${isDisabled ? 'opacity-50 grayscale cursor-not-allowed' : isActive ? 'translate-y-[-8px] z-20' : 'translate-y-0 opacity-80 hover:opacity-100'}
             ${isFiring ? 'animate-recoil-fire z-30' : ''}
+            ${isTriggered && !isFiring ? 'ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] translate-y-[-4px]' : ''}
         `}
         onMouseEnter={() => !isDisabled && setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -131,6 +142,11 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
           <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 bg-radial-gradient from-yellow-200 to-transparent opacity-50 z-50 pointer-events-none animate-pulse mix-blend-screen"></div>
       )}
 
+      {/* Triggered Indicator (Glow Pulse) */}
+      {isTriggered && !isFiring && (
+          <div className="absolute inset-0 bg-yellow-400/10 rounded-lg animate-pulse z-0"></div>
+      )}
+
       {/* --- CARTRIDGE CASING --- */}
       <div 
         className={`
@@ -138,9 +154,10 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
             border-2 border-b-4
             flex flex-col
             ${isFiring ? 'bg-slate-800 border-yellow-200 shadow-[0_0_30px_#facc15]' : isActive ? 'bg-slate-900' : 'bg-slate-950'}
+            ${isTriggered ? 'border-yellow-500/50' : ''}
         `}
         style={{ 
-            borderColor: isFiring ? '#fef08a' : (isActive && !isDisabled ? weapon.color : '#334155'),
+            borderColor: isFiring ? '#fef08a' : (isActive && !isDisabled ? weapon.color : (isTriggered ? '#eab308' : '#334155')),
             boxShadow: isFiring ? `0 0 50px ${weapon.color}` : (isActive && !isDisabled ? `0 0 20px ${weapon.color}40` : 'none')
         }}
       >
@@ -152,6 +169,9 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
               ))}
               {isTactical && !isHovered && !isDisabled && (
                   <div className="absolute top-0 right-0 text-[8px] font-bold bg-green-500 text-black px-1 animate-pulse">任务</div>
+              )}
+              {isTriggered && (
+                  <div className="absolute top-0 left-0 w-full h-full bg-yellow-400/20 animate-pulse"></div>
               )}
           </div>
 
@@ -182,17 +202,18 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
 
                 {/* Weapon Name & Level */}
                 <div className="flex justify-between items-start z-10 mb-1">
-                    <span className="text-[10px] font-bold text-slate-300 leading-tight truncate w-16">{weapon.name}</span>
+                    <span className={`text-[10px] font-bold leading-tight truncate w-16 ${isUltimate ? 'text-yellow-200' : 'text-slate-300'}`}>{weapon.name}</span>
                     <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">v{level}</span>
                 </div>
 
                 {/* Center: THE MULTIPLIER */}
                 <div className="flex-1 flex items-center justify-center z-10 relative">
                     <div 
-                        className={`font-black italic tracking-tighter text-4xl drop-shadow-lg ${isFiring ? 'text-white scale-125' : 'text-transparent bg-clip-text'}`}
+                        className={`font-black italic tracking-tighter text-4xl drop-shadow-lg ${isFiring ? 'text-white scale-125' : (isTriggered ? 'scale-110' : '')} ${isUltimate ? 'text-yellow-400' : 'text-transparent bg-clip-text'}`}
                         style={{ 
-                            backgroundImage: isFiring ? 'none' : isDisabled ? 'linear-gradient(180deg, #555, #333)' : `linear-gradient(180deg, #fff, ${weapon.color})`,
-                            textShadow: isActive && !isDisabled ? `0 0 15px ${weapon.color}` : 'none'
+                            backgroundImage: isFiring || isUltimate ? 'none' : isDisabled ? 'linear-gradient(180deg, #555, #333)' : `linear-gradient(180deg, #fff, ${weapon.color})`,
+                            textShadow: isActive && !isDisabled ? `0 0 15px ${weapon.color}` : 'none',
+                            color: isUltimate ? '#facc15' : isBuffedMult ? '#facc15' : undefined
                         }}
                     >
                         <span className="text-xl align-top opacity-80 mr-0.5">{getMultDisplay().startsWith('x') || getMultDisplay() === 'MAX' ? '' : 'x'}</span>
@@ -202,8 +223,8 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
 
                 {/* Requirements Text */}
                 <div className="text-center z-10 mb-1 relative">
-                    <div className="inline-block px-2 py-0.5 bg-black/60 rounded border border-white/10 backdrop-blur-md shadow-sm">
-                        <span className={`text-[9px] font-mono font-bold tracking-tight ${isActive ? 'text-cyan-200' : 'text-slate-500'}`}>
+                    <div className={`inline-block px-2 py-0.5 rounded border backdrop-blur-md shadow-sm ${isTriggered ? 'bg-yellow-500/20 border-yellow-500/50' : 'bg-black/60 border-white/10'}`}>
+                        <span className={`text-[9px] font-mono font-bold tracking-tight ${isActive ? 'text-cyan-200' : 'text-slate-500'} ${isTriggered ? '!text-yellow-200' : ''}`}>
                             {weapon.req}
                         </span>
                     </div>
@@ -213,21 +234,16 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
           {/* 3. Bottom Stats Row */}
           <div className={`h-7 border-t border-white/10 flex items-center justify-between px-2 py-1 ${isActive ? 'bg-slate-900' : 'bg-black'}`}>
               <div className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-full ${isActive && !isDisabled ? 'animate-pulse bg-blue-400' : 'bg-slate-700'}`}></div>
-                  <span className="text-xs font-bold font-mono text-blue-400">{weapon.baseChips}</span>
+                  <div className={`w-2 h-2 rounded-full ${isActive && !isDisabled ? 'animate-pulse bg-blue-400' : 'bg-slate-700'} ${isTriggered ? '!bg-yellow-400' : ''}`}></div>
+                  <span className={`text-xs font-bold font-mono ${isTriggered ? 'text-yellow-400' : isBuffedChips ? 'text-green-400' : 'text-blue-400'}`}>
+                      {displayChipsVal}
+                  </span>
               </div>
               
-              <div className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-600'}`}>
+              <div className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-600'} ${isUltimate ? 'text-yellow-500' : ''}`}>
                   {getWeaponIcon(weapon.id)}
               </div>
           </div>
-      </div>
-
-      {/* Pins */}
-      <div className="h-2 mx-1.5 flex gap-1 justify-center mt-[-1px] relative z-0">
-          {[...Array(4)].map((_, i) => (
-              <div key={i} className={`w-3 h-2 rounded-b-sm border-b border-l border-r border-yellow-700 bg-gradient-to-b from-yellow-600 to-yellow-400 shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}></div>
-          ))}
       </div>
 
       {/* Active Light */}

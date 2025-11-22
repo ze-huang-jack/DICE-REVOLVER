@@ -3,7 +3,7 @@ import React from 'react';
 import { BossModifier, CyberwareDef, EnemyIntent } from '../types';
 import { CoinIcon, ShieldIcon, CpuIcon, HeartIcon, SkullIcon, BugIcon, WifiOffIcon, LayersIcon, CrosshairIcon, SwordIcon, AlertOctagonIcon, ZapIcon, ShieldAlertIcon, ZapOffIcon } from './Icons';
 import { CyberwareCard } from './CyberwareCard';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 
 interface BattleHUDProps {
   level: number;
@@ -79,7 +79,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = (props) => {
             
             {/* 1. TOP INFO STRIP */}
             <div className="w-full bg-slate-950/90 border-b border-slate-800 backdrop-blur-md flex items-center justify-between px-3 py-1.5 sm:px-4 pointer-events-auto h-10 sm:h-12">
-                {/* Left: Zone Info */}
+                {/* Left: Zone Info & Chips Helper */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col leading-none">
                         <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">Location</span>
@@ -93,6 +93,24 @@ export const BattleHUD: React.FC<BattleHUDProps> = (props) => {
                         <CoinIcon className="w-3.5 h-3.5 text-yellow-400" />
                         <span className="font-mono font-bold text-yellow-400 text-sm">{gold}</span>
                     </div>
+
+                    {/* Chips Formula Helper */}
+                    <div className="flex items-center gap-1 bg-slate-900/50 px-2 py-1 rounded border border-slate-700 text-[9px] font-mono text-slate-400 group relative cursor-help">
+                         <div className="flex items-center gap-1">
+                             <span className="text-blue-400 font-bold">Chips</span>
+                             <span>+</span>
+                             <span className="text-white">Dice</span>
+                             <span>x</span>
+                             <span className="text-red-400 font-bold">Mult</span>
+                         </div>
+                         {/* Tooltip */}
+                         <div className="absolute top-full left-0 mt-2 w-48 bg-slate-900 border border-slate-600 p-2 rounded shadow-xl text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
+                             <div className="font-bold text-white mb-1 border-b border-slate-700 pb-1">Damage Formula</div>
+                             <div className="flex justify-between"><span>Base Chips:</span> <span className="text-blue-400">Weapon</span></div>
+                             <div className="flex justify-between"><span>Dice Sum:</span> <span className="text-white">Active Dice</span></div>
+                             <div className="flex justify-between"><span>Multiplier:</span> <span className="text-red-400">Weapon x Hands</span></div>
+                         </div>
+                    </div>
                 </div>
 
                 {/* Right: Cyberware */}
@@ -100,7 +118,6 @@ export const BattleHUD: React.FC<BattleHUDProps> = (props) => {
                      {cyberware.map((cw, i) => (
                         <div key={i} className="hidden sm:block"><CyberwareCard item={cw} compact /></div>
                     ))}
-                     {/* Mobile Compact View for Cyberware could go here if needed, hiding for now to save space on strict mobile */}
                      <div className="flex sm:hidden gap-1">
                         <div className="flex items-center gap-1 text-xs text-slate-400 font-mono bg-slate-900 px-2 py-1 rounded">
                             <CpuIcon className="w-3 h-3" />

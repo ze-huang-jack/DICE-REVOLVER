@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { RefreshCw, Cpu, Eye, Zap, Shield, Heart, Swords, Crosshair, Database, TrendingUp, AlertTriangle, Anchor, BatteryCharging, Skull, Activity, Biohazard, Star, Flame, Crown } from 'lucide-react';
+import { RefreshCw, Cpu, Eye, Zap, Shield, Heart, Swords, Crosshair, Database, TrendingUp, AlertTriangle, Anchor, BatteryCharging, Skull, Activity, Biohazard, Star, Flame, Crown, Clock } from 'lucide-react';
 import { DieData, DieValue, GameState, WeaponDef, CombatResult, DamagePopup, ShopItem, Difficulty, WeaponType, CyberwareDef, BossModifier, Particle, EnemyIntent, EnemyActionType, RewardOption, TacticalMission, WeaponTriggerType, RewardRarity } from './types';
 import { Die } from './components/Die';
 import { Enemy } from './components/Enemy';
@@ -36,59 +36,41 @@ const WEAPONS: WeaponDef[] = [
   { id: 'BUCKSHOT', name: '怒火', triggerType: 'PAIR', req: '一对 (Pair)', baseChips: 15, baseMult: 2, color: '#fb923c' },
   { id: 'PEACEMAKER', name: '和平缔造者', triggerType: 'SCATTER', req: '散牌 (Scatter)', baseChips: 5, baseMult: 1, color: '#94a3b8' },
 
-  // --- TIER 2: EVOLUTIONS (3 Branches Per Weapon) ---
-
-  // 1. PEACEMAKER
+  // --- TIER 2: EVOLUTIONS ---
   { id: 'CROSSBOW', parentId: 'PEACEMAKER', name: '诸葛连弩', triggerType: 'SCATTER', req: '散牌', baseChips: 0, baseMult: 20, color: '#84cc16', isArtifact: true, description: '每次开火自动触发，无需条件' },
-  { id: 'BOUNTY_HUNTER', parentId: 'PEACEMAKER', name: '赏金猎人', triggerType: 'SCATTER', req: '散牌', baseChips: 20, baseMult: 2, color: '#facc15', isArtifact: true, description: '每次触发获得 2 金币' },
+  { id: 'BOUNTY_HUNTER', parentId: 'PEACEMAKER', name: '赏金猎人', triggerType: 'SCATTER', req: '散牌', baseChips: 20, baseMult: 2, color: '#facc15', isArtifact: true, description: '触发获得 5 筹码' },
   { id: 'DESPERADO', parentId: 'PEACEMAKER', name: '亡命徒', triggerType: 'SCATTER', req: '散牌', baseChips: 10, baseMult: 5, color: '#71717a', isArtifact: true, description: '若无剩余重随次数，倍率x5' },
-
-  // 2. BUCKSHOT
   { id: 'MIDAS_HAND', parentId: 'BUCKSHOT', name: 'MIDAS·点金', triggerType: 'PAIR', req: '一对', baseChips: 50, baseMult: 5, color: '#fbbf24', isArtifact: true, description: '基础筹码 = 当前金币 / 2' },
   { id: 'TITAN_GRIP', parentId: 'BUCKSHOT', name: '泰坦之握', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 30, color: '#b45309', isArtifact: true, description: '若对子是 [6,6]，倍率+30' },
   { id: 'BUCKSHOT_NOVA', parentId: 'BUCKSHOT', name: '新星爆发', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 3, color: '#be185d', isArtifact: true, description: '额外增加等同于当前生命值的筹码' },
-
-  // 3. VECTOR
   { id: 'TWIN_FANG', parentId: 'VECTOR', name: '双生毒牙', triggerType: 'TWO_PAIR', req: '两对', baseChips: 60, baseMult: 8, color: '#db2777', isArtifact: true, description: '触发两次伤害结算' },
   { id: 'AKIMBO', parentId: 'VECTOR', name: '双持暴徒', triggerType: 'TWO_PAIR', req: '两对', baseChips: 50, baseMult: 5, color: '#475569', isArtifact: true, description: '本回合每使用一次重随，倍率+3' },
   { id: 'RICOCHET', parentId: 'VECTOR', name: '跳弹', triggerType: 'TWO_PAIR', req: '两对', baseChips: 40, baseMult: 15, color: '#0ea5e9', isArtifact: true, description: '若两对数字相同 (四条)，伤害翻倍' },
-
-  // 4. TRINITY
   { id: 'TACTICAL_EXEC', parentId: 'TRINITY', name: '战术终端', triggerType: 'THREE_KIND', req: '3条', baseChips: 100, baseMult: 15, color: '#10b981', isArtifact: true, description: '完成随机战术任务以获得额外奖励' },
   { id: 'VAMPIRE_FANG', parentId: 'TRINITY', name: '鲜血祭仪', triggerType: 'THREE_KIND', req: '3条', baseChips: 60, baseMult: 10, color: '#991b1b', isArtifact: true, description: '造成伤害的 20% 转化为生命恢复' },
   { id: 'TRI_FORCE', parentId: 'TRINITY', name: '三角力量', triggerType: 'THREE_KIND', req: '3条', baseChips: 80, baseMult: 25, color: '#eab308', isArtifact: true, description: '若骰子点数为奇数，伤害翻倍' },
-
-  // 5. QUADRA
   { id: 'OMNI_BURST', parentId: 'QUADRA', name: '全域轰炸', triggerType: 'FOUR_KIND', req: '4+条', baseChips: 200, baseMult: 50, color: '#d946ef', isArtifact: true, description: '4条、5条、6条均可触发，且倍率极高' },
   { id: 'PLASMA_CANNON', parentId: 'QUADRA', name: '等离子炮', triggerType: 'FOUR_KIND', req: '4条', baseChips: 500, baseMult: 20, color: '#3b82f6', isArtifact: true, description: '基础筹码 +400' },
   { id: 'RAILGUN', parentId: 'QUADRA', name: '电磁轨道炮', triggerType: 'FOUR_KIND', req: '4条', baseChips: 150, baseMult: 80, color: '#22d3ee', isArtifact: true, description: '无视护盾 (倍率极高)' },
-
-  // 6. SINGULARITY
   { id: 'EVENT_HORIZON', parentId: 'SINGULARITY', name: '视界线', triggerType: 'SIX_KIND', req: '6条', baseChips: 500, baseMult: 200, color: '#4c1d95', isArtifact: true, description: '需集齐6条，伤害毁灭性' },
   { id: 'BLACK_HOLE', parentId: 'SINGULARITY', name: '黑洞发生器', triggerType: 'FIVE_KIND', req: '5条', baseChips: 200, baseMult: 50, color: '#1e1b4b', isArtifact: true, description: '获得 500 点护盾' },
   { id: 'SUPERNOVA', parentId: 'SINGULARITY', name: '超新星', triggerType: 'FIVE_KIND', req: '5条', baseChips: 300, baseMult: 100, color: '#f59e0b', isArtifact: true, description: '若点数为 [6]，伤害 x5' },
-
-  // 7. STRIKER
   { id: 'CHRONOS', parentId: 'STRIKER', name: 'TIME·时之轮', triggerType: 'SMALL_STR', req: '小顺', baseChips: 0, baseMult: 1, color: '#2dd4bf', isArtifact: true, description: '再次结算本轮所有已触发的伤害' },
   { id: 'ASSASSIN', parentId: 'STRIKER', name: '暗影刺客', triggerType: 'SMALL_STR', req: '小顺', baseChips: 80, baseMult: 20, color: '#0f172a', isArtifact: true, description: '必定暴击' },
   { id: 'FLASH_STEP', parentId: 'STRIKER', name: '瞬步', triggerType: 'SMALL_STR', req: '小顺', baseChips: 150, baseMult: 30, color: '#e2e8f0', isArtifact: true, description: '若在第1次投掷后触发，伤害 x3' },
-
-  // 8. FLUX BEAM
   { id: 'PRISM_BEAM', parentId: 'FLUX_BEAM', name: '光棱塔', triggerType: 'SUPER_STR', req: '大满贯 (1-6)', baseChips: 300, baseMult: 100, color: '#06b6d4', isArtifact: true, description: '需集齐1-6点，终极激光' },
-  { id: 'ORBITAL_CANNON', parentId: 'FLUX_BEAM', name: '轨道打击', triggerType: 'BIG_STR', req: '大顺', baseChips: 150, baseMult: 50, color: '#6366f1', isArtifact: true, description: '倍率随回合数增加 (xTurn)' },
-  { id: 'HYPER_BEAM', parentId: 'FLUX_BEAM', name: '破坏死光', triggerType: 'BIG_STR', req: '大顺', baseChips: 250, baseMult: 80, color: '#dc2626', isArtifact: true, description: '消耗 20 HP，造成极大伤害' },
-
-  // 9. FLAMETHROWER
+  { id: 'ORBITAL_CANNON', parentId: 'FLUX_BEAM', name: '轨道打击', triggerType: 'BIG_STR', req: '大顺', baseChips: 150, baseMult: 50, color: '#6366f1', isArtifact: true, description: '倍率随回合数增加 (x3/turn)' },
+  { id: 'HYPER_BEAM', parentId: 'FLUX_BEAM', name: '破坏死光', triggerType: 'BIG_STR', req: '大顺', baseChips: 250, baseMult: 80, color: '#dc2626', isArtifact: true, description: '消耗50护盾 (无则免费)' },
   { id: 'INFERNO', parentId: 'FLAMETHROWER', name: '焦土政策', triggerType: 'DOUBLE_TRIPLE', req: '双三条', baseChips: 200, baseMult: 50, color: '#ea580c', isArtifact: true, description: '需两个三条，燃烧一切' },
   { id: 'MELTDOWN', parentId: 'FLAMETHROWER', name: '堆芯熔毁', triggerType: 'FULL_HOUSE', req: '葫芦', baseChips: 150, baseMult: 40, color: '#84cc16', isArtifact: true, description: '消耗所有护盾，每点护盾增加伤害' },
   { id: 'NAPALM', parentId: 'FLAMETHROWER', name: '凝固汽油', triggerType: 'FULL_HOUSE', req: '葫芦', baseChips: 120, baseMult: 30, color: '#f97316', isArtifact: true, description: '若对子是 [6,6]，倍率 x3' },
 
-  // --- TIER 3: ULTIMATES (Lv 50 Reward) ---
-  { id: 'EXCALIBUR', name: '誓约·胜利', triggerType: 'FLAVOR', req: 'ULTIMATE', baseChips: 999, baseMult: 999, color: '#fde047', isArtifact: true, description: '王者之剑' },
-  { id: 'AEGIS_SYSTEM', name: '宙斯盾', triggerType: 'FLAVOR', req: 'ULTIMATE', baseChips: 500, baseMult: 500, color: '#60a5fa', isArtifact: true, description: '绝对防御转化为火力' },
-  { id: 'RAGNAROK', name: '诸神黄昏', triggerType: 'FLAVOR', req: 'ULTIMATE', baseChips: 666, baseMult: 666, color: '#ef4444', isArtifact: true, description: '毁灭世界' },
+  // --- TIER 3: ULTIMATES ---
+  { id: 'EXCALIBUR', name: '誓约·胜利', triggerType: 'EIGHT_KIND', req: '8条 (8-Kind)', baseChips: 999, baseMult: 999, color: '#fde047', isArtifact: true, description: '王者之剑: 需8个相同点数' },
+  { id: 'AEGIS_SYSTEM', name: '宙斯盾', triggerType: 'FIVE_PAIRS', req: '5对 (5-Pairs)', baseChips: 500, baseMult: 500, color: '#60a5fa', isArtifact: true, description: '绝对防御: 需5对 (10个色子完美配对)' },
+  { id: 'RAGNAROK', name: '诸神黄昏', triggerType: 'TWO_SMALL_STR', req: '双小顺 (2xSmStr)', baseChips: 666, baseMult: 666, color: '#ef4444', isArtifact: true, description: '毁灭世界: 需2个小顺 (8个色子)' },
 
-  // --- FLAVOR (Legacy / Unused in main progression but kept for types) ---
+  // --- FLAVOR ---
   { id: 'DOOMSDAY', name: '末日', triggerType: 'FLAVOR', req: '总和 >= 24', baseChips: 80, baseMult: 8, color: '#b91c1c' },
   { id: 'PLASMA', name: '等离子', triggerType: 'FLAVOR', req: '全奇数', baseChips: 50, baseMult: 5, color: '#f59e0b' },
   { id: 'VOID', name: '虚空', triggerType: 'FLAVOR', req: '全偶数', baseChips: 50, baseMult: 5, color: '#6366f1' },
@@ -109,14 +91,40 @@ const CYBERWARE_POOL: CyberwareDef[] = [
         onCalculate: (ctx) => Math.random() > 0.7 ? { mult: Math.floor(ctx.mult * 1.5) } : {}
     },
     {
-        id: 'mechanic_peacemaker', name: '弹巢: 午时已到', desc: '和平缔造者系: 倍率等于最大点数', rarity: 'RARE', price: 75, icon: <RevolverIcon />,
-        onCalculate: (ctx) => ['PEACEMAKER','CROSSBOW','BOUNTY_HUNTER','DESPERADO'].includes(ctx.weaponId) ? { mult: Math.max(...ctx.diceValues, 1) } : {}
+        id: 'chronosphere', name: '时空枢纽', desc: '每次行动后15%概率立即额外行动(不回重随)', rarity: 'LEGENDARY', price: 150, icon: <Clock className="text-fuchsia-400 w-full h-full" />,
+        onTurnStart: (s) => ({}) // Passive effect handled in handleFire
     },
     {
-        id: 'mechanic_vector', name: '枪机: 双持模组', desc: '维克托系: 基础倍率翻倍', rarity: 'EPIC', price: 90, icon: <UziIcon />,
-        onCalculate: (ctx) => ['VECTOR','TWIN_FANG','AKIMBO','RICOCHET'].includes(ctx.weaponId) ? { mult: ctx.mult * 2 } : {}
+        id: 'shield_overload', name: '护盾过载', desc: '将当前护盾值附加到基础筹码', rarity: 'RARE', price: 75, icon: <ShieldIcon className="text-blue-400 w-full h-full" />,
+        onCalculate: (ctx) => ({ chips: ctx.chips + (window as any)._playerShieldRef || 0 }) // Hacky access, better in main calc
     }
 ];
+
+// Helper for HP Scaling
+const getHpMultiplier = (level: number, difficulty: Difficulty): number => {
+    if (level <= 15) return 1.0; 
+    
+    // Shared table for 16-60
+    let mult = 1;
+    if (level >= 16 && level <= 20) mult = 3;
+    else if (level >= 21 && level <= 25) mult = 6;
+    else if (level >= 26 && level <= 30) mult = 10;
+    else if (level >= 31 && level <= 40) mult = 15;
+    else if (level >= 41 && level <= 50) mult = 25;
+    else if (level >= 51 && level <= 60) mult = 50;
+    
+    // Endless Logic
+    if (level > 60) {
+        // Multiplier is 60 * (chunks of levels after 60)
+        mult = 60 * (level - 60);
+    }
+    return mult;
+};
+
+// Enemy Damage Scaling
+const getDamageMultiplier = (difficulty: Difficulty): number => {
+    return difficulty === 'ROOKIE' ? 2.0 : 3.0; // +100% vs +200%
+}
 
 const CHIP_POOL: CyberwareDef[] = [
     {
@@ -157,18 +165,18 @@ const CHIP_POOL: CyberwareDef[] = [
     }
 ];
 
-// Static Reward Definitions for Encyclopedia and Logic
 const REWARD_DEFINITIONS = [
     { id: 'hull', title: '装甲加固', desc: '最大生命 +20', rarity: 'COMMON', iconType: 'HEART' },
     { id: 'shield', title: '偏导力场', desc: '获得 30 护盾', rarity: 'COMMON', iconType: 'SHIELD' },
     { id: 'gold', title: '加密缓存', desc: '获得 50 金币', rarity: 'COMMON', iconType: 'DB' },
     { id: 'patch', title: '紧急修复', desc: '恢复 50 生命', rarity: 'COMMON', iconType: 'BATTERY' },
     { id: 'nanite_repair', title: '纳米修复群', desc: '恢复20%已损生命值', rarity: 'RARE', iconType: 'ACTIVITY' },
-    { id: 'reroll', title: '义体手臂', desc: '最大重随次数 +1', rarity: 'RARE', iconType: 'REFRESH' },
+    { id: 'reroll', title: '义体手臂', desc: '最大重随次数 +1 (限选2次)', rarity: 'RARE', iconType: 'REFRESH' },
     { id: 'glass_cannon', title: '玻璃大炮', desc: '聚变倍率+2, 最大生命-40', rarity: 'CORRUPTED', iconType: 'BIO' },
     { id: 'blood_money', title: '血腥金钱', desc: '获得200金币, 当前生命-30', rarity: 'CORRUPTED', iconType: 'SKULL' },
     { id: 'corrupt_data', title: '数据损坏', desc: '金币+100, 30%几率锁定色子', rarity: 'CORRUPTED', iconType: 'ALERT' },
     { id: 'unstable_core', title: '不稳定核心', desc: '吸血+50%, 每次开火自损5点', rarity: 'CORRUPTED', iconType: 'BIO' },
+    { id: 'shield_battery', title: '护盾电池', desc: '将当前护盾翻倍', rarity: 'RARE', iconType: 'SHIELD' },
 ] as const;
 
 const BOSS_MODIFIERS: BossModifier[] = [
@@ -177,6 +185,25 @@ const BOSS_MODIFIERS: BossModifier[] = [
     { id: 'GLITCH', name: '系统故障', desc: '每手-10筹码', effectId: 'GLITCH' },
     { id: 'DAMPENER', name: '抑制器', desc: '基础倍率减半', effectId: 'DAMPENER' }
 ];
+
+const TRIGGER_NAMES: Record<WeaponTriggerType, string> = {
+    'SCATTER': '散牌',
+    'PAIR': '对子',
+    'TWO_PAIR': '两对',
+    'THREE_KIND': '三条',
+    'FOUR_KIND': '四条',
+    'FIVE_KIND': '五条',
+    'SIX_KIND': '六条',
+    'EIGHT_KIND': '八条',
+    'SMALL_STR': '小顺',
+    'BIG_STR': '大顺',
+    'TWO_SMALL_STR': '双小顺',
+    'SUPER_STR': '全家福',
+    'FULL_HOUSE': '葫芦',
+    'FIVE_PAIRS': '五对',
+    'DOUBLE_TRIPLE': '双三条',
+    'FLAVOR': '特殊'
+};
 
 const getRandomFace = (): DieValue => Math.ceil(Math.random() * 6) as DieValue;
 
@@ -190,14 +217,19 @@ const getDistinctRandomFace = (current: DieValue): DieValue => {
     return next;
 };
 
-const generateIntent = (level: number, enemyType: string, currentDice: DieData[], phase: number = 1): EnemyIntent => {
+const generateIntent = (level: number, enemyType: string, currentDice: DieData[], phase: number = 1, difficulty: Difficulty = 'ROOKIE'): EnemyIntent => {
     const isBoss = level % 5 === 0;
     let baseDmg = 10 + Math.floor(level * 2.5);
+    
+    // Enemy Damage Scaling based on new prompt
+    let dmgMult = getDamageMultiplier(difficulty);
+    baseDmg = Math.floor(baseDmg * dmgMult);
     
     if (level <= 10) baseDmg = Math.floor(baseDmg * 0.7);
     
     const activeSealedDice = currentDice.filter(d => d.sealedTurns > 0).length;
-    const canSeal = activeSealedDice < 2;
+    // Constraint: Monsters in the first 10 levels will not have the ability to seal slots
+    const canSeal = activeSealedDice < 2 && level > 10;
 
     if (enemyType === 'BOSS_FINAL' && phase === 2) {
         baseDmg = Math.floor(baseDmg * 1.5);
@@ -275,6 +307,7 @@ export default function App() {
     lifesteal: 0,
     rerolls: MAX_REROLLS,
     maxRerolls: MAX_REROLLS,
+    rerollUpgrades: 0,
     dice: [],
     maxDice: INITIAL_DICE_COUNT,
     turn: 1,
@@ -296,11 +329,14 @@ export default function App() {
   const [rewardOptions, setRewardOptions] = useState<RewardOption[]>([]);
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
-  
-  // Evolution State
+  const [triggeredHands, setTriggeredHands] = useState<{ weapon: WeaponType, dice: number[] }[]>([]);
   const [evolutionOptions, setEvolutionOptions] = useState<{baseWeapon: WeaponType, options: WeaponDef[]} | null>(null);
-  
   const [victoryModalOpen, setVictoryModalOpen] = useState(false);
+
+  // Ugly hack to expose shield for the "Shield Overload" chip calculation without rewriting context logic
+  useEffect(() => {
+    (window as any)._playerShieldRef = gameState.playerShield;
+  }, [gameState.playerShield]);
 
   useEffect(() => {
       setGameState(prev => ({ ...prev, highScore: getSavedHighScore() }));
@@ -312,6 +348,16 @@ export default function App() {
           saveHighScore(gameState.level);
       }
   }, [gameState.level]);
+
+  useEffect(() => {
+      if (gameState.status === 'PLAYING' && !rolling) {
+          const diceValues = gameState.dice.filter(d => d.value > 0 && d.sealedTurns === 0).map(d => d.value);
+          const hands = calculateTriggeredWeapons(diceValues, gameState.unlockedWeapons);
+          setTriggeredHands(hands);
+      } else {
+          setTriggeredHands([]);
+      }
+  }, [gameState.dice, gameState.unlockedWeapons, rolling, gameState.status]);
 
   useEffect(() => {
       if (gameState.dice.length !== gameState.maxDice) {
@@ -389,8 +435,11 @@ export default function App() {
       return options;
   };
 
-  const startPlayerTurn = (state: GameState): GameState => {
-      let newState = { ...state, rerolls: state.maxRerolls };
+  const startPlayerTurn = (state: GameState, restoreRerolls: boolean = true): GameState => {
+      let newState = { ...state };
+      if (restoreRerolls) {
+          newState.rerolls = state.maxRerolls;
+      }
       newState.dice = newState.dice.map(d => ({
           ...d,
           sealedTurns: Math.max(0, d.sealedTurns - 1)
@@ -407,9 +456,8 @@ export default function App() {
     soundManager.startBgm('NORMAL');
     const startHp = difficulty === 'ROOKIE' ? 200 : 50;
     let initialEnemyHp = 2000;
-    initialEnemyHp = Math.floor(initialEnemyHp * 0.3); // Level 1 is now 0.3x
+    initialEnemyHp = Math.floor(initialEnemyHp * 0.3); // Level 1 scaling
 
-    // Initial 9 weapons
     const startWeapons: WeaponType[] = [
         'PEACEMAKER', 'BUCKSHOT', 'VECTOR', 'TRINITY', 'QUADRA', 
         'SINGULARITY', 'STRIKER', 'FLUX_BEAM', 'FLAMETHROWER'
@@ -432,6 +480,7 @@ export default function App() {
       lifesteal: 0,
       rerolls: MAX_REROLLS,
       maxRerolls: MAX_REROLLS,
+      rerollUpgrades: 0,
       stats: { turnsTaken: 0, maxDamageDealt: 0, enemiesKilled: 0 },
       dice: Array.from({ length: INITIAL_DICE_COUNT }).map((_, i) => ({
         id: i, value: 0, isLocked: false, isRolling: false, sealedTurns: 0
@@ -445,7 +494,7 @@ export default function App() {
       maxCyberwareSlots: 3
     };
     
-    initialState.enemyIntent = generateIntent(1, 'BOSS_1', initialState.dice, 1);
+    initialState.enemyIntent = generateIntent(1, 'BOSS_1', initialState.dice, 1, difficulty);
     setGameState(initialState);
     setRewardOptions(generateChipOptions());
     setShowChipSelect(true);
@@ -474,14 +523,13 @@ export default function App() {
       setParticles(prev => [...prev, ...newParticles]);
   };
 
-  // LEVEL 50 Ultimate Choice
   const generateUltimateRewards = (): RewardOption[] => {
       return [
-          { id: 'ult_excalibur', title: '誓约·胜利之剑', desc: '究极武器: 999基础筹码 x 999倍率', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <ExcaliburIcon className="w-full h-full text-yellow-300"/>, 
+          { id: 'ult_excalibur', title: '誓约·胜利之剑', desc: '究极武器: 999基础筹码 x 999倍率 (8条)', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <ExcaliburIcon className="w-full h-full text-yellow-300"/>, 
             apply: (s) => ({ ...s, unlockedWeapons: [...s.unlockedWeapons, 'EXCALIBUR'] }) },
-          { id: 'ult_aegis', title: '宙斯盾防御系统', desc: '究极武器: 将防御转化为绝对火力', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <ShieldIcon className="w-full h-full text-blue-300"/>, 
+          { id: 'ult_aegis', title: '宙斯盾防御系统', desc: '究极武器: 将防御转化为绝对火力 (5对)', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <ShieldIcon className="w-full h-full text-blue-300"/>, 
             apply: (s) => ({ ...s, unlockedWeapons: [...s.unlockedWeapons, 'AEGIS_SYSTEM'] }) },
-          { id: 'ult_ragnarok', title: '诸神黄昏', desc: '究极武器: 毁灭一切的终焉', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <Flame className="w-full h-full text-red-500"/>, 
+          { id: 'ult_ragnarok', title: '诸神黄昏', desc: '究极武器: 毁灭一切的终焉 (双小顺)', rarity: 'ULTIMATE', type: 'WEAPON_UP', icon: <Flame className="w-full h-full text-red-500"/>, 
             apply: (s) => ({ ...s, unlockedWeapons: [...s.unlockedWeapons, 'RAGNAROK'] }) }
       ];
   };
@@ -503,15 +551,19 @@ export default function App() {
           }
       };
 
-      const pool: RewardOption[] = REWARD_DEFINITIONS.map(def => ({
+      const basePool: RewardOption[] = REWARD_DEFINITIONS
+        .filter(def => {
+             if (def.id === 'reroll' && gameState.rerollUpgrades >= 2) return false; // Reroll Cap
+             return true;
+        })
+        .map(def => ({
           id: def.id,
           title: def.title,
           desc: def.desc,
           rarity: def.rarity,
-          type: def.rarity === 'COMMON' ? 'STAT_UP' : 'MECHANIC', // Simplified typing
+          type: def.rarity === 'COMMON' ? 'STAT_UP' : 'MECHANIC', 
           icon: getIcon(def.iconType),
           apply: (s) => {
-              // Map IDs to logic logic
               let ns = { ...s };
               switch(def.id) {
                   case 'hull': ns.maxPlayerHp += 20; ns.playerHp += 20; break;
@@ -519,25 +571,100 @@ export default function App() {
                   case 'gold': ns.gold += 50; break;
                   case 'patch': ns.playerHp = Math.min(ns.maxPlayerHp, ns.playerHp + 50); break;
                   case 'nanite_repair': ns.playerHp = Math.floor(ns.playerHp + (ns.maxPlayerHp - ns.playerHp) * 0.2); break;
-                  case 'reroll': ns.maxRerolls += 1; break;
-                  case 'glass_cannon': ns.maxPlayerHp = Math.max(1, ns.maxPlayerHp - 40); ns.playerHp = Math.min(ns.playerHp, ns.maxPlayerHp); break; // Mult logic handled in calculate
+                  case 'reroll': ns.maxRerolls += 1; ns.rerollUpgrades += 1; break;
+                  case 'glass_cannon': ns.maxPlayerHp = Math.max(1, ns.maxPlayerHp - 40); ns.playerHp = Math.min(ns.playerHp, ns.maxPlayerHp); break; 
                   case 'blood_money': ns.gold += 200; ns.playerHp = Math.max(1, ns.playerHp - 30); break;
                   case 'corrupt_data': ns.gold += 100; break;
                   case 'unstable_core': ns.lifesteal += 0.5; break;
+                  case 'shield_battery': ns.playerShield *= 2; break;
               }
               return ns;
           }
       }));
 
-      let available = pool;
+      // --- DYNAMIC REWARDS (Supply Protocols) ---
+      const dynamicOptions: RewardOption[] = [];
+      const ownedTriggerTypes = new Set<WeaponTriggerType>();
+      
+      gameState.unlockedWeapons.forEach(wId => {
+          const w = WEAPONS.find(def => def.id === wId);
+          if (w) ownedTriggerTypes.add(w.triggerType);
+      });
+
+      ownedTriggerTypes.forEach(trigger => {
+          const triggerName = TRIGGER_NAMES[trigger] || trigger;
+          if (trigger === 'FLAVOR' || trigger.includes('KIND') || trigger.includes('STR') || trigger.includes('PAIR') || trigger === 'SCATTER' || trigger === 'FULL_HOUSE') {
+               // 1. Common: Chips Up
+               dynamicOptions.push({
+                   id: `proto_chips_${trigger}`, title: `${triggerName}: 强化组件`, desc: `${triggerName}系基础筹码 +15`, rarity: 'COMMON', type: 'WEAPON_UP', icon: <PlusIcon className="text-blue-400 w-full h-full"/>,
+                   apply: (s) => ({ ...s, cyberware: [...s.cyberware, {
+                       id: `tuning_chips_${trigger}_${Date.now()}`, name: `${triggerName}强化`, desc: `${triggerName}+15筹码`, rarity: 'COMMON', price: 0, icon: <PlusIcon />,
+                       onCalculate: (ctx) => {
+                           const w = WEAPONS.find(def => def.id === ctx.weaponId);
+                           return w?.triggerType === trigger ? { chips: ctx.chips + 15 } : {};
+                       }
+                   }]})
+               });
+
+               // 2. Rare: Mult Up
+               dynamicOptions.push({
+                   id: `proto_mult_${trigger}`, title: `${triggerName}: 核心超频`, desc: `${triggerName}系基础倍率 +5`, rarity: 'RARE', type: 'WEAPON_UP', icon: <Zap className="text-yellow-400 w-full h-full"/>,
+                   apply: (s) => ({ ...s, cyberware: [...s.cyberware, {
+                       id: `tuning_mult_${trigger}_${Date.now()}`, name: `${triggerName}超频`, desc: `${triggerName}+5倍率`, rarity: 'RARE', price: 0, icon: <Zap />,
+                       onCalculate: (ctx) => {
+                           const w = WEAPONS.find(def => def.id === ctx.weaponId);
+                           return w?.triggerType === trigger ? { mult: ctx.mult + 5 } : {};
+                       }
+                   }]})
+               });
+
+               // 3. Epic: Shield Generator
+               dynamicOptions.push({
+                   id: `proto_shield_${trigger}`, title: `${triggerName}: 能量转化`, desc: `触发${triggerName}时获得 5 点护盾`, rarity: 'EPIC', type: 'MECHANIC', icon: <ShieldIcon className="text-cyan-400 w-full h-full"/>,
+                   apply: (s) => ({ ...s, cyberware: [...s.cyberware, {
+                       id: `mech_shield_${trigger}_${Date.now()}`, name: `${triggerName}护盾`, desc: `触发${triggerName}+5护盾`, rarity: 'EPIC', price: 0, icon: <ShieldIcon />,
+                       onPostFire: (st, wId) => {
+                           const w = WEAPONS.find(def => def.id === wId);
+                           return w?.triggerType === trigger ? { playerShield: st.playerShield + 5 } : {};
+                       }
+                   }]})
+               });
+               
+               // 4. Epic: Max HP (Bio-absorption)
+               dynamicOptions.push({
+                   id: `proto_hp_${trigger}`, title: `${triggerName}: 生物质吸收`, desc: `触发${triggerName}时获得 2 点最大生命`, rarity: 'EPIC', type: 'MECHANIC', icon: <HeartIcon className="text-green-400 w-full h-full"/>,
+                   apply: (s) => ({ ...s, cyberware: [...s.cyberware, {
+                       id: `mech_hp_${trigger}_${Date.now()}`, name: `${triggerName}活性`, desc: `触发${triggerName}+2上限`, rarity: 'EPIC', price: 0, icon: <HeartIcon />,
+                       onPostFire: (st, wId) => {
+                           const w = WEAPONS.find(def => def.id === wId);
+                           return w?.triggerType === trigger ? { maxPlayerHp: st.maxPlayerHp + 2, playerHp: st.playerHp + 2 } : {};
+                       }
+                   }]})
+               });
+          }
+      });
+
+      // Special Mechanics
+      dynamicOptions.push({
+          id: 'proto_shield_overload', title: '护盾过载协议', desc: '开火时将当前护盾值附加到基础筹码', rarity: 'RARE', type: 'MECHANIC', icon: <ShieldIcon className="w-full h-full text-blue-400"/>,
+          apply: (s) => ({ ...s, cyberware: [...s.cyberware, CYBERWARE_POOL.find(c => c.id === 'shield_overload')!] })
+      });
+
+      dynamicOptions.push({
+          id: 'proto_chronosphere', title: '时空枢纽', desc: '开火后15%概率再次行动 (不回重随)', rarity: 'LEGENDARY', type: 'MECHANIC', icon: <Clock className="w-full h-full text-fuchsia-400"/>,
+          apply: (s) => ({ ...s, cyberware: [...s.cyberware, CYBERWARE_POOL.find(c => c.id === 'chronosphere')!] })
+      });
+
+      const fullPool = [...basePool, ...dynamicOptions];
+
       const getWeighted = () => {
           const r = Math.random();
-          if (r > 0.80) return available.filter(p => p.rarity === 'CORRUPTED')[Math.floor(Math.random() * available.filter(p => p.rarity === 'CORRUPTED').length)];
-          if (r > 0.60) return available.filter(p => p.rarity === 'RARE')[Math.floor(Math.random() * available.filter(p => p.rarity === 'RARE').length)];
-          return available.filter(p => p.rarity === 'COMMON')[Math.floor(Math.random() * available.filter(p => p.rarity === 'COMMON').length)];
+          if (r > 0.85) return fullPool.filter(p => p.rarity === 'CORRUPTED' || p.rarity === 'LEGENDARY' || p.rarity === 'EPIC')[Math.floor(Math.random() * fullPool.filter(p => p.rarity === 'CORRUPTED' || p.rarity === 'LEGENDARY' || p.rarity === 'EPIC').length)];
+          if (r > 0.60) return fullPool.filter(p => p.rarity === 'RARE')[Math.floor(Math.random() * fullPool.filter(p => p.rarity === 'RARE').length)];
+          return fullPool.filter(p => p.rarity === 'COMMON')[Math.floor(Math.random() * fullPool.filter(p => p.rarity === 'COMMON').length)];
       };
 
-      const safeGet = () => { const res = getWeighted(); return res || available[0]; };
+      const safeGet = () => { const res = getWeighted(); return res || basePool[0]; };
       return [safeGet(), safeGet(), safeGet()].map((o, i) => ({...o, id: `${o.id}_${Date.now()}_${i}`}));
   };
 
@@ -550,85 +677,45 @@ export default function App() {
       let diceSum = diceValues.reduce((a,b) => a+b, 0);
 
       // --- SPECIAL MECHANICS LOGIC ---
-      
-      // SINGULARITY / EVENT HORIZON Base scaling
       if (weaponId === 'SINGULARITY' || weaponId === 'SUPERNOVA' || weaponId === 'EVENT_HORIZON') {
           const face = diceValues[0] || 1;
           baseMult += (face * 10);
       }
+      if (weaponId === 'SUPERNOVA' && diceValues[0] === 6) baseMult *= 5;
+      if (weaponId === 'FLUX_BEAM' || weaponId === 'PRISM_BEAM') baseMult += (diceValues.length * 5);
       
-      // SUPERNOVA: Massive dmg on 6s
-      if (weaponId === 'SUPERNOVA') {
-          if (diceValues[0] === 6) baseMult *= 5;
-      }
-      // BLACK HOLE: Shielding
-      if (weaponId === 'BLACK_HOLE') {
-          // Effect happens in fire loop, visuals here
-      }
-
-      // FLUX BEAM Scaling
-      if (weaponId === 'FLUX_BEAM' || weaponId === 'PRISM_BEAM') {
-          baseMult += (diceValues.length * 5);
-      }
-      // ORBITAL CANNON: Turn Scaling
-      if (weaponId === 'ORBITAL_CANNON') {
-          baseMult += (gameState.turn * 10);
-      }
+      // Rebalance: Orbital Cannon scaled down
+      if (weaponId === 'ORBITAL_CANNON') baseMult += (gameState.turn * 3); // Reduced from 10 to 3
       
-      // PEACEMAKER VARIANTS
-      if (weaponId === 'DESPERADO') {
-          if (gameState.rerolls === 0) baseMult *= 5;
-      }
-
-      // BUCKSHOT VARIANTS
-      if (weaponId === 'MIDAS_HAND') {
-          baseChips += Math.floor(gameState.gold * 0.5);
-      }
-      if (weaponId === 'TITAN_GRIP') {
-          if (diceValues.includes(6)) baseMult += 30;
-      }
-      if (weaponId === 'BUCKSHOT_NOVA') {
-          baseChips += gameState.playerHp;
-      }
-
-      // VECTOR VARIANTS
+      if (weaponId === 'DESPERADO' && gameState.rerolls === 0) baseMult *= 5;
+      if (weaponId === 'MIDAS_HAND') baseChips += Math.floor(gameState.gold * 0.5);
+      if (weaponId === 'TITAN_GRIP' && diceValues.includes(6)) baseMult += 30;
+      if (weaponId === 'BUCKSHOT_NOVA') baseChips += gameState.playerHp;
       if (weaponId === 'AKIMBO') {
           const rerollsUsed = gameState.maxRerolls - gameState.rerolls;
           baseMult += (rerollsUsed * 3);
       }
       if (weaponId === 'RICOCHET') {
-          // Check if it's effectively 4 of a kind (e.g. 4,4,4,4 counts as 2 pair of 4s)
           const distinct = new Set(diceValues).size;
           if (distinct === 1 && diceValues.length >= 4) baseMult *= 2;
       }
-
-      // TRINITY VARIANTS
-      if (weaponId === 'TRI_FORCE') {
-          // Check if odd
-          if (diceValues.length > 0 && diceValues[0] % 2 !== 0) baseMult *= 2;
-      }
-
-      // QUADRA VARIANTS
-      if (weaponId === 'OMNI_BURST') {
-           baseMult = 50 * (Math.max(1, diceValues.length - 3));
-      }
-      // RAILGUN handled by bypassing shield logic mostly, or just high mult
-
-      // STRIKER VARIANTS
-      if (weaponId === 'FLASH_STEP') {
-          if (gameState.turn === 1) baseMult *= 3; // Simplified to turn 1
-      }
-
-      // FLAMETHROWER VARIANTS
-      if (weaponId === 'MELTDOWN') {
-           baseChips += gameState.playerShield;
-      }
+      if (weaponId === 'TRI_FORCE' && diceValues.length > 0 && diceValues[0] % 2 !== 0) baseMult *= 2;
+      if (weaponId === 'OMNI_BURST') baseMult = 50 * (Math.max(1, diceValues.length - 3));
+      if (weaponId === 'FLASH_STEP' && gameState.turn === 1) baseMult *= 3; 
+      if (weaponId === 'MELTDOWN') baseChips += gameState.playerShield;
       if (weaponId === 'NAPALM') {
           const counts: Record<number,number> = {};
           diceValues.forEach(v => counts[v] = (counts[v]||0)+1);
           if (counts[6] >= 2) baseMult *= 3;
       }
+      if (weaponId === 'BOUNTY_HUNTER') {
+          baseChips += 5; // Adds 5 chips effectively
+      }
 
+      // ULTIMATE SCALING
+      if (weaponId === 'EXCALIBUR') baseChips += diceSum * 10;
+      if (weaponId === 'AEGIS_SYSTEM') baseMult += gameState.playerShield;
+      if (weaponId === 'RAGNAROK') baseMult += (gameState.level * 20);
 
       // MODIFIERS
       if (modifier.effectId === 'FIREWALL') diceSum = diceValues.reduce((a,b) => b === 1 ? a : a+b, 0);
@@ -646,7 +733,12 @@ export default function App() {
       return { chips: context.chips, mult: context.mult, total, diceSum: context.diceSum };
   };
 
-  // CORE TRIGGER LOGIC
+  const getEffectiveWeaponStats = (weaponId: WeaponType, state: GameState) => {
+      // Calculate stats with "dummy" dice (sum 0) to get effective Base Chips and Mult from modifiers
+      const res = calculateHandScore(weaponId, [], state.unlockedWeapons, state.cyberware, state.bossModifier, state);
+      return { chips: res.chips, mult: res.mult };
+  };
+
   const calculateTriggeredWeapons = (diceValues: number[], unlocked: WeaponType[]) => {
       const triggered: { weapon: WeaponType, dice: number[] }[] = [];
       if (diceValues.length === 0) return triggered;
@@ -655,7 +747,6 @@ export default function App() {
       diceValues.forEach(v => { if(v>0) counts[v]++ });
       const sortedUnique = Object.keys(counts).filter(k=>counts[Number(k)]>0).map(Number).sort((a,b)=>a-b);
       
-      // SEQUENCE
       let maxSeq = 0;
       let currentSeq = 0;
       let seqDice: number[] = [];
@@ -671,13 +762,10 @@ export default function App() {
       }
       if (currentSeq > maxSeq) { maxSeq = currentSeq; bestSeqDice = [...seqDice]; }
 
-      // Helper to check if player owns a weapon of a certain trigger type
       const getWeaponForTrigger = (t: WeaponTriggerType): WeaponType | undefined => {
-          // Find the weapon in unlocked that matches this trigger type
           return unlocked.find(id => WEAPONS.find(w => w.id === id)?.triggerType === t);
       };
 
-      // FLAVOR/ULTIMATE Triggers
       const sum = diceValues.reduce((a,b)=>a+b, 0);
       unlocked.forEach(wId => {
           const w = WEAPONS.find(def => def.id === wId);
@@ -686,51 +774,75 @@ export default function App() {
               if (wId === 'PLASMA' && diceValues.every(d => d % 2 !== 0)) triggered.push({ weapon: wId, dice: diceValues });
               if (wId === 'VOID' && diceValues.every(d => d % 2 === 0)) triggered.push({ weapon: wId, dice: diceValues });
               if (wId === 'SHIV' && sum <= 11) triggered.push({ weapon: wId, dice: diceValues });
-              if (['EXCALIBUR', 'AEGIS_SYSTEM', 'RAGNAROK'].includes(wId)) triggered.push({ weapon: wId, dice: diceValues });
           }
       });
 
-      // NEW: SIX KIND (Event Horizon)
+      // EIGHT KIND (Excalibur)
+      const eightKind = Object.keys(counts).find(k => counts[Number(k)] >= 8);
+      if (eightKind) {
+          const w = getWeaponForTrigger('EIGHT_KIND');
+          if (w) triggered.push({ weapon: w, dice: Array(8).fill(Number(eightKind)) });
+      }
+
+      // FIVE PAIRS (Aegis System)
+      let distinctPairs = 0;
+      Object.values(counts).forEach(c => { distinctPairs += Math.floor(c / 2); });
+      if (distinctPairs >= 5) {
+          const w = getWeaponForTrigger('FIVE_PAIRS');
+          if (w) triggered.push({ weapon: w, dice: diceValues });
+      }
+
+      // TWO SMALL STRAIGHTS (Ragnarok)
+      const hasTwoSmStr = () => {
+          const checkStr = (c: Record<number,number>) => {
+              if (c[1]>0 && c[2]>0 && c[3]>0 && c[4]>0) return [1,2,3,4];
+              if (c[2]>0 && c[3]>0 && c[4]>0 && c[5]>0) return [2,3,4,5];
+              if (c[3]>0 && c[4]>0 && c[5]>0 && c[6]>0) return [3,4,5,6];
+              return null;
+          }
+          const tempCounts = {...counts};
+          const firstStr = checkStr(tempCounts);
+          if (firstStr) {
+              firstStr.forEach(v => tempCounts[v]--);
+              const secondStr = checkStr(tempCounts);
+              return !!secondStr;
+          }
+          return false;
+      };
+      if (hasTwoSmStr()) {
+          const w = getWeaponForTrigger('TWO_SMALL_STR');
+          if (w) triggered.push({ weapon: w, dice: diceValues });
+      }
+
+      // Existing Triggers
       const sixKind = Object.keys(counts).find(k => counts[Number(k)] >= 6);
       if (sixKind) {
           const w = getWeaponForTrigger('SIX_KIND');
           if (w) triggered.push({ weapon: w, dice: Array(6).fill(Number(sixKind)) });
       }
-
-      // NEW: SUPER STRAIGHT (Prism Beam - 123456)
       if (maxSeq >= 6) {
           const w = getWeaponForTrigger('SUPER_STR');
           if (w) triggered.push({ weapon: w, dice: [1,2,3,4,5,6] });
       }
-
-      // NEW: DOUBLE TRIPLE (Inferno - Two 3-Kinds)
       let tripleCount = 0;
       Object.values(counts).forEach(c => { if (c >= 3) tripleCount++; });
       if (tripleCount >= 2) {
           const w = getWeaponForTrigger('DOUBLE_TRIPLE');
           if (w) triggered.push({ weapon: w, dice: diceValues });
       }
-
-      // BIG STRAIGHT
       if (maxSeq >= 5) {
           const w = getWeaponForTrigger('BIG_STR');
           if (w) triggered.push({ weapon: w, dice: diceValues.filter(d => bestSeqDice.includes(d)) });
       }
-      
-      // SMALL STRAIGHT
       if (maxSeq >= 4) {
           const w = getWeaponForTrigger('SMALL_STR');
           if (w) triggered.push({ weapon: w, dice: diceValues.filter(d => bestSeqDice.slice(0,4).includes(d)) });
       }
-
-      // FIVE KIND
       const fiveKind = Object.keys(counts).find(k => counts[Number(k)] >= 5);
       if (fiveKind) {
           const w = getWeaponForTrigger('FIVE_KIND');
           if (w) triggered.push({ weapon: w, dice: Array(5).fill(Number(fiveKind)) });
       }
-
-      // FOUR KIND (Also triggers Omni-Burst if available on 4, 5, 6)
       const omniWeapon = unlocked.find(id => id === 'OMNI_BURST');
       if (omniWeapon) {
            const any4Plus = Object.keys(counts).find(k => counts[Number(k)] >= 4);
@@ -742,17 +854,12 @@ export default function App() {
               if (w) triggered.push({ weapon: w, dice: Array(4).fill(Number(fourKind)) });
           }
       }
-
-      // THREE KIND
       const threeKind = Object.keys(counts).find(k => counts[Number(k)] >= 3);
       if (threeKind) {
           const w = getWeaponForTrigger('THREE_KIND');
           if (w) triggered.push({ weapon: w, dice: Array(3).fill(Number(threeKind)) });
       }
-
-      // FULL HOUSE
-      let hasThree = false;
-      let hasTwo = false;
+      let hasThree = false; let hasTwo = false;
       Object.keys(counts).forEach(k => {
           if (counts[Number(k)] >= 3 && !hasThree) { hasThree = true; }
           else if (counts[Number(k)] >= 2 && !hasTwo) { hasTwo = true; }
@@ -762,19 +869,15 @@ export default function App() {
           const w = getWeaponForTrigger('FULL_HOUSE');
           if (w) triggered.push({ weapon: w, dice: diceValues });
       }
-
-      // TWO PAIR
-      let distinctPairs = 0;
+      let twoPairCount = 0;
       Object.values(counts).forEach(c => {
-          if (c >= 4) distinctPairs += 2;
-          else if (c >= 2) distinctPairs += 1;
+          if (c >= 4) twoPairCount += 2;
+          else if (c >= 2) twoPairCount += 1;
       });
-      if (distinctPairs >= 2) {
+      if (twoPairCount >= 2) {
            const w = getWeaponForTrigger('TWO_PAIR');
            if (w) triggered.push({ weapon: w, dice: diceValues });
       }
-
-      // PAIR
       const wPair = getWeaponForTrigger('PAIR');
       if (wPair) {
           for (let f=6; f>=1; f--) {
@@ -784,8 +887,6 @@ export default function App() {
               }
           }
       }
-
-      // SCATTER (Always)
       const wScatter = getWeaponForTrigger('SCATTER');
       if (wScatter) {
           triggered.push({ weapon: wScatter, dice: diceValues });
@@ -798,8 +899,14 @@ export default function App() {
      const pool: ShopItem[] = [
          { id: 'repair', type: 'CONSUMABLE', name: '紧急维修包', desc: '恢复 30 HP', cost: 15, icon: <HeartIcon className="w-6 h-6"/> },
          { id: 'shield', type: 'CONSUMABLE', name: '能量护盾', desc: '增加 15 护盾', cost: 25, icon: <ShieldIcon className="w-6 h-6"/> },
-         { id: 'reroll_up', type: 'CONSUMABLE', name: '机械手臂', desc: '+1 最大重随次数', cost: 40, icon: <RefreshCw className="w-6 h-6"/> },
      ];
+     // Cap reroll upgrade
+     if (currentState.rerollUpgrades < 2) {
+         pool.push({ id: 'reroll_up', type: 'CONSUMABLE', name: '机械手臂', desc: '+1 最大重随次数', cost: 40, icon: <RefreshCw className="w-6 h-6"/> });
+     } else {
+         pool.push({ id: 'shield_battery_shop', type: 'CONSUMABLE', name: '护盾电池', desc: '护盾翻倍', cost: 50, icon: <ShieldIcon className="w-6 h-6 text-blue-400"/> });
+     }
+
      const randomCyber = CYBERWARE_POOL[Math.floor(Math.random() * CYBERWARE_POOL.length)];
      if(randomCyber && currentState.cyberware.length < currentState.maxCyberwareSlots) {
          pool.push({ id: `cyber_${randomCyber.id}_${Date.now()}`, type: 'CYBERWARE', name: randomCyber.name, desc: randomCyber.desc, cost: randomCyber.price, icon: randomCyber.icon, data: randomCyber });
@@ -885,8 +992,7 @@ export default function App() {
                   disabledWeapons: nextDisabled,
                   turn: i === loopCount - 1 ? prev.turn + 1 : prev.turn, 
                   status: playerHp <= 0 ? 'GAMEOVER' : 'PLAYING', 
-                  rerolls: maxRerolls, 
-                  enemyIntent: i === loopCount - 1 ? generateIntent(prev.level, prev.enemyType, nextDice, prev.bossPhase) : prev.enemyIntent 
+                  enemyIntent: i === loopCount - 1 ? generateIntent(prev.level, prev.enemyType, nextDice, prev.bossPhase, prev.difficulty) : prev.enemyIntent 
               };
           });
           
@@ -932,9 +1038,6 @@ export default function App() {
                 setGameState(prev => ({...prev, playerShield: prev.playerShield + 500}));
                 setDamagePopups(prev => [...prev, {id: Date.now(), value: 0, x:0, y:-40, color: '#1e1b4b', isCrit: false, label: 'SHIELD +500'}]);
             }
-            if (hand.weapon === 'BOUNTY_HUNTER') {
-                setGameState(prev => ({...prev, gold: prev.gold + 2}));
-            }
             if (hand.weapon === 'VAMPIRE_FANG') {
                 const heal = Math.floor(score.total * 0.2);
                 setGameState(prev => ({...prev, playerHp: Math.min(prev.maxPlayerHp, prev.playerHp + heal)}));
@@ -943,8 +1046,16 @@ export default function App() {
                  setGameState(prev => ({...prev, playerShield: 0}));
             }
             if (hand.weapon === 'HYPER_BEAM') {
-                 setGameState(prev => ({...prev, playerHp: Math.max(1, prev.playerHp - 20)}));
+                 // Consumes up to 50 shield, doesn't touch HP
+                 setGameState(prev => ({...prev, playerShield: Math.max(0, prev.playerShield - 50)}));
             }
+
+            // TRIGGER CYBERWARE EFFECTS (Epic Protocols etc)
+            gameState.cyberware.forEach(cw => {
+                if (cw.onPostFire) {
+                    setGameState(prev => ({ ...prev, ...cw.onPostFire!(prev, hand.weapon, score.total) }));
+                }
+            });
 
             const weaponDef = WEAPONS.find(w => w.id === hand.weapon);
             const isCrit = score.total >= 50; 
@@ -990,7 +1101,7 @@ export default function App() {
                    hp: newHp,
                    maxHp: Math.floor(prev.maxHp * 0.5),
                    bossPhase: 2,
-                   enemyIntent: generateIntent(60, 'BOSS_FINAL', prev.dice, 2)
+                   enemyIntent: generateIntent(60, 'BOSS_FINAL', prev.dice, 2, prev.difficulty)
                }));
                
                triggerShake('HEAVY');
@@ -998,7 +1109,7 @@ export default function App() {
                setDamagePopups(prev => [...prev, { id: Date.now(), value: 0, x: 0, y: -50, color: '#ef4444', isCrit: true, label: '系统重启: 最终协议' }]);
                
                await new Promise(r => setTimeout(r, 1000));
-               const intent = generateIntent(60, 'BOSS_FINAL', gameState.dice, 2);
+               const intent = generateIntent(60, 'BOSS_FINAL', gameState.dice, 2, gameState.difficulty);
                await executeEnemyAttack(intent.damage, intent.type, intent.hits);
                if (gameState.playerHp > 0) {
                     setGameState(prev => startPlayerTurn(prev));
@@ -1022,11 +1133,8 @@ export default function App() {
                 setDamagePopups(prev => [...prev, { id: Date.now(), value: 0, x: 0, y: -50, color: '#facc15', isCrit: true, label: '核心扩容: 槽位+1' }]);
            }
 
-           // WEAPON EVOLUTION LOGIC (Levels 5, 10, ... 45)
            if (gameState.level < 50 && gameState.level % 5 === 0) {
-               // Find weapons that player has that are Tier 1 (have children)
                const tier1WeaponsOwned = gameState.unlockedWeapons.filter(id => {
-                    // Check if this weapon ID has children in the WEAPONS list
                     const children = WEAPONS.filter(w => w.parentId === id);
                     return children.length > 0;
                });
@@ -1035,7 +1143,7 @@ export default function App() {
                    const baseWeaponId = tier1WeaponsOwned[Math.floor(Math.random() * tier1WeaponsOwned.length)];
                    const evolutionOptions = WEAPONS.filter(w => w.parentId === baseWeaponId);
                    setEvolutionOptions({ baseWeapon: baseWeaponId, options: evolutionOptions });
-                   setFiring(false); // Stop firing loop while waiting for choice? Actually handled by modal overlay
+                   setFiring(false);
                }
            }
 
@@ -1049,12 +1157,6 @@ export default function App() {
               setRewardOptions(generateUltimateRewards());
               setShowRewards(true);
           } else {
-              // Only show normal rewards if NOT evolving? Or show both?
-              // The request says "5-45... will provide a basic weapon reinforcement INSTEAD OF random".
-              // Assuming this replaces the usual Boss Reward logic for these levels, or maybe just the weapon part.
-              // Let's assume it replaces the Reward Screen for Boss levels to focus on the weapon.
-              // BUT wait, standard logic is rewards -> shop -> next.
-              // Let's queue them. If Evolution triggers, we show that.
               if (!(gameState.level < 50 && gameState.level % 5 === 0)) {
                   setRewardOptions(generateRewards());
                   setShowRewards(true);
@@ -1062,11 +1164,29 @@ export default function App() {
           }
 
       } else {
-          const intent = gameState.enemyIntent;
-          await executeEnemyAttack(intent.damage, intent.type, intent.hits);
-          if (gameState.playerHp > 0) {
-              setGameState(prev => startPlayerTurn(prev));
+          // Check for Time Stop Protocol (Chronosphere)
+          const hasChronosphere = gameState.cyberware.some(c => c.id === 'chronosphere');
+          let extraTurnProc = false;
+          if (hasChronosphere) {
+              extraTurnProc = Math.random() < 0.15;
+          }
+
+          if (extraTurnProc) {
+              setDamagePopups(prev => [...prev, { id: Date.now(), value: 0, x: 0, y: -80, color: '#e879f9', isCrit: true, label: 'TIME STOP // 额外行动' }]);
+              soundManager.playWeaponSfx('ENERGY', 100); 
+              setScreenFlash(true);
+              setGameState(prev => ({ ...prev, turn: prev.turn + 1 })); // Advance turn counter for DOTs/Regen
+              await new Promise(r => setTimeout(r, 800));
+              // Start turn but DO NOT restore rerolls
+              setGameState(prev => startPlayerTurn(prev, false)); 
               triggerRoll(true);
+          } else {
+              const intent = gameState.enemyIntent;
+              await executeEnemyAttack(intent.damage, intent.type, intent.hits);
+              if (gameState.playerHp > 0) {
+                  setGameState(prev => startPlayerTurn(prev, true)); // Normal turn, restore rerolls
+                  triggerRoll(true);
+              }
           }
       }
       setFiring(false);
@@ -1091,15 +1211,12 @@ export default function App() {
       if (!evolutionOptions) return;
       
       setGameState(prev => {
-          // Replace old weapon ID with new one
           const newUnlocked = prev.unlockedWeapons.map(id => id === evolutionOptions.baseWeapon ? selectedWeapon.id : id);
           return { ...prev, unlockedWeapons: newUnlocked };
       });
       
       setEvolutionOptions(null);
       
-      // After Evolution, proceed to Chips -> Shop -> Next
-      // Since we skipped standard rewards for this boss, we go straight to Chips
       setRewardOptions(generateChipOptions());
       setShowChipSelect(true);
   };
@@ -1126,7 +1243,7 @@ export default function App() {
           ...prev,
           status: 'START',
           victoryModalOpen: false,
-          level: 1, // Reset level so background reverts to normal
+          level: 1, 
           bossPhase: 1,
           enemyType: 'BOSS_1'
       }));
@@ -1191,7 +1308,6 @@ export default function App() {
                                     className="relative bg-slate-800 border-2 border-slate-600 hover:border-cyan-400 hover:bg-slate-700 hover:-translate-y-2 transition-all duration-300 p-6 rounded-xl group flex flex-col items-center text-center"
                             >
                                 <div className="w-20 h-20 mb-4 text-cyan-400 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-transform">
-                                    {/* Placeholder Icon, assumes WeaponCard logic handles mapping based on ID */}
                                     <Crosshair className="w-full h-full" />
                                 </div>
                                 <h3 className="text-xl font-black text-white mb-2">{opt.name}</h3>
@@ -1219,7 +1335,8 @@ export default function App() {
                     if(item.type === 'CYBERWARE') ns.cyberware = [...ns.cyberware, item.data];
                     if(item.id === 'repair') ns.playerHp = Math.min(ns.maxPlayerHp, ns.playerHp + 30);
                     if(item.id === 'shield') ns.playerShield = Math.min(100, ns.playerShield + 15);
-                    if(item.id === 'reroll_up') ns.maxRerolls += 1;
+                    if(item.id === 'reroll_up') { ns.maxRerolls += 1; ns.rerollUpgrades += 1; }
+                    if(item.id === 'shield_battery_shop') ns.playerShield *= 2;
                     return ns;
                 });
                 setShopItems(prev => prev.filter(i => i.id !== item.id));
@@ -1243,32 +1360,7 @@ export default function App() {
 
             const baseGrowth = (200 + (nextLevel * 60)) * 10; 
             const hpMultiplier = nextType === 'BOSS_FINAL' ? 15 : (isBoss ? 6 : 4);
-            
-            let hpScale = 1.0;
-            
-            if (nextLevel <= 5) {
-                hpScale = 0.3;
-            } else if (nextLevel <= 10) {
-                hpScale = 0.7;
-            } else if (nextLevel < 16) {
-                hpScale = 1.0;
-            } else {
-                if (gameState.difficulty === 'ROOKIE') {
-                     if (nextLevel >= 46) hpScale = 10;
-                     else if (nextLevel >= 31) hpScale = 6;
-                     else hpScale = 3;
-                } else {
-                     // CYBERPSYCH or ENDLESS
-                     if (gameState.difficulty === 'ENDLESS' && nextLevel > 60) {
-                         const x = Math.ceil((nextLevel - 60) / 10);
-                         hpScale = 60 * x;
-                     } else {
-                         if (nextLevel >= 46) hpScale = 20;
-                         else if (nextLevel >= 31) hpScale = 12;
-                         else hpScale = 6;
-                     }
-                }
-            }
+            const hpScale = getHpMultiplier(nextLevel, gameState.difficulty);
             
             const nextHp = Math.floor(baseGrowth * hpMultiplier * hpScale);
 
@@ -1277,7 +1369,8 @@ export default function App() {
                     ...prev, level: nextLevel,
                     hp: nextHp, maxHp: nextHp,
                     bossModifier: nextBossModifier,
-                    enemyType: nextType, enemyIntent: generateIntent(nextLevel, nextType, prev.dice, 1),
+                    enemyType: nextType, 
+                    enemyIntent: generateIntent(nextLevel, nextType, prev.dice, 1, prev.difficulty),
                     bossPhase: 1,
                     dice: prev.dice.map(d => ({ ...d, isLocked: false, value: 0 as DieValue })),
                     tacticalMission: undefined
@@ -1326,16 +1419,22 @@ export default function App() {
 
             <div className="flex-none flex flex-col gap-1 p-2 pb-6 sm:pb-8 bg-slate-950/90 backdrop-blur border-t border-white/10 z-30">
                 <div className="flex gap-3 overflow-x-auto pb-4 pt-2 scrollbar-hide mask-linear-fade px-4 min-h-[150px] items-end">
-                    {WEAPONS.filter(w => gameState.unlockedWeapons.includes(w.id)).map(w => (
-                        <WeaponCard 
-                            key={w.id} 
-                            weapon={w} 
-                            isActive={true} 
-                            isFiring={activeWeaponId === w.id} 
-                            isDisabled={gameState.disabledWeapons.includes(w.id)}
-                            level={gameState.level}
-                        />
-                    ))}
+                    {WEAPONS.filter(w => gameState.unlockedWeapons.includes(w.id)).map(w => {
+                        const effective = getEffectiveWeaponStats(w.id, gameState);
+                        return (
+                            <WeaponCard 
+                                key={w.id} 
+                                weapon={w} 
+                                isActive={true} 
+                                isFiring={activeWeaponId === w.id} 
+                                isDisabled={gameState.disabledWeapons.includes(w.id)}
+                                level={gameState.level}
+                                isTriggered={triggeredHands.some(h => h.weapon === w.id)}
+                                effectiveChips={effective.chips}
+                                effectiveMult={effective.mult}
+                            />
+                        );
+                    })}
                 </div>
                 <Controls onRoll={handleRollClick} onFire={handleFire} rerolls={gameState.rerolls} maxRerolls={gameState.maxRerolls} isRolling={rolling} isFiring={firing} />
             </div>

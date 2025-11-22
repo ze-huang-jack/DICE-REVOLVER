@@ -27,12 +27,15 @@ export type WeaponTriggerType =
     | 'THREE_KIND' 
     | 'FOUR_KIND' 
     | 'FIVE_KIND' 
-    | 'SIX_KIND'        // New: Event Horizon
+    | 'SIX_KIND'        // Event Horizon
+    | 'EIGHT_KIND'      // New: Excalibur
     | 'SMALL_STR' 
     | 'BIG_STR' 
-    | 'SUPER_STR'       // New: Prism Beam (1-6)
+    | 'TWO_SMALL_STR'   // New: Ragnarok
+    | 'SUPER_STR'       // Prism Beam
     | 'FULL_HOUSE'
-    | 'DOUBLE_TRIPLE'   // New: Inferno (3 of a kind x 2)
+    | 'FIVE_PAIRS'      // New: Aegis
+    | 'DOUBLE_TRIPLE'   // Inferno
     | 'FLAVOR';
 
 export type WeaponType = 
@@ -47,59 +50,23 @@ export type WeaponType =
   | 'FLUX_BEAM'   // Big Straight
   | 'FLAMETHROWER'// Full House
 
-  // --- TIER 2 (EVOLUTIONS - 3 Branches Each) ---
-  
-  // PEACEMAKER (Scatter)
-  | 'CROSSBOW'       // Auto-fire
-  | 'BOUNTY_HUNTER'  // Gold on hit
-  | 'DESPERADO'      // Dmg up when rerolls empty
+  // --- TIER 2 (EVOLUTIONS) ---
+  | 'CROSSBOW' | 'BOUNTY_HUNTER' | 'DESPERADO'
+  | 'MIDAS_HAND' | 'TITAN_GRIP' | 'BUCKSHOT_NOVA'
+  | 'TWIN_FANG' | 'AKIMBO' | 'RICOCHET'
+  | 'TACTICAL_EXEC' | 'VAMPIRE_FANG' | 'TRI_FORCE'
+  | 'OMNI_BURST' | 'PLASMA_CANNON' | 'RAILGUN'
+  | 'EVENT_HORIZON' | 'BLACK_HOLE' | 'SUPERNOVA'
+  | 'CHRONOS' | 'ASSASSIN' | 'FLASH_STEP'
+  | 'PRISM_BEAM' | 'ORBITAL_CANNON' | 'HYPER_BEAM'
+  | 'INFERNO' | 'MELTDOWN' | 'NAPALM'
 
-  // BUCKSHOT (Pair)
-  | 'MIDAS_HAND'     // Gold scaling
-  | 'TITAN_GRIP'     // Huge mult on 6s
-  | 'BUCKSHOT_NOVA'  // HP scaling
-
-  // VECTOR (Two Pair)
-  | 'TWIN_FANG'      // Triggers twice
-  | 'AKIMBO'         // Reroll scaling
-  | 'RICOCHET'       // 4-of-a-kind counts as 2 pair + Bonus
-
-  // TRINITY (3 Kind)
-  | 'TACTICAL_EXEC'  // Mission
-  | 'VAMPIRE_FANG'   // Lifesteal
-  | 'TRI_FORCE'      // Odd number bonus
-
-  // QUADRA (4 Kind)
-  | 'OMNI_BURST'     // 4/5/6 Kind trigger
-  | 'PLASMA_CANNON'  // Flat Chip bonus
-  | 'RAILGUN'        // Ignore Shield/Defense (High Mult)
-
-  // SINGULARITY (5 Kind)
-  | 'EVENT_HORIZON'  // 6 Kind
-  | 'BLACK_HOLE'     // Shield Generation
-  | 'SUPERNOVA'      // Instant Kill / Massive Dmg on 6s
-
-  // STRIKER (Small Str)
-  | 'CHRONOS'        // Re-trigger round
-  | 'ASSASSIN'       // 100% Crit
-  | 'FLASH_STEP'     // Bonus if Turn 1
-
-  // FLUX_BEAM (Big Str)
-  | 'PRISM_BEAM'     // 1-6 Trigger
-  | 'ORBITAL_CANNON' // Turn scaling
-  | 'HYPER_BEAM'     // HP Cost for massive Dmg
-
-  // FLAMETHROWER (Full House)
-  | 'INFERNO'        // Double Triple
-  | 'MELTDOWN'       // Shield to Dmg
-  | 'NAPALM'         // High Mult
-
-  // --- TIER 3 (ULTIMATES - Level 50) ---
+  // --- TIER 3 (ULTIMATES) ---
   | 'EXCALIBUR' 
   | 'AEGIS_SYSTEM'
   | 'RAGNAROK'
 
-  // --- FLAVOR (Legacy/Shop only if re-enabled) ---
+  // --- FLAVOR ---
   | 'PLASMA' | 'VOID' | 'DOOMSDAY' | 'SHIV';
 
 export interface CyberwareDef {
@@ -111,6 +78,7 @@ export interface CyberwareDef {
   icon: React.ReactNode;
   onCalculate?: (context: ScoringContext) => Partial<ScoringContext>;
   onTurnStart?: (context: GameState) => Partial<GameState>;
+  onPostFire?: (state: GameState, weaponId: WeaponType, damage: number) => Partial<GameState>;
 }
 
 export interface BossModifier {
@@ -156,7 +124,7 @@ export interface GameState {
   enemyType: string; 
   bossModifier: BossModifier;
   enemyIntent: EnemyIntent;
-  bossPhase: number; // 1 = Normal, 2 = Resurrected (Lv 60)
+  bossPhase: number; 
   
   // Player
   playerHp: number;
@@ -165,6 +133,7 @@ export interface GameState {
   lifesteal: number;
   rerolls: number;
   maxRerolls: number;
+  rerollUpgrades: number; // New: Track how many times max rerolls have been upgraded
   
   // System
   dice: DieData[];
@@ -175,10 +144,10 @@ export interface GameState {
 
 export interface WeaponDef {
   id: WeaponType;
-  parentId?: WeaponType; // The weapon this evolved from
+  parentId?: WeaponType; 
   name: string;
-  triggerType: WeaponTriggerType; // Logic mapping
-  evolution?: WeaponType[]; // REMOVED SINGLE, NOW ARRAY OF OPTIONS (Logically handled in App)
+  triggerType: WeaponTriggerType; 
+  evolution?: WeaponType[]; 
   req: string;
   baseChips: number;
   baseMult: number; 
