@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Difficulty } from '../types';
 import { Skull, Award, Zap, Crosshair, Cpu, Shield, Heart, Terminal } from 'lucide-react';
@@ -35,15 +34,6 @@ const SimulatedBattle = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyan-900/30 rounded-full">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent animate-spin-slow origin-center mask-radar"></div>
             </div>
-            
-            <style>{`
-                @keyframes scanDown {
-                    0% { background-position: 0 0; }
-                    100% { background-position: 0 80px; }
-                }
-                .animate-scan-down { animation: scanDown 4s linear infinite; }
-                .mask-radar { mask-image: conic-gradient(from 0deg, transparent 0deg, black 360deg); }
-            `}</style>
         </div>
     )
 }

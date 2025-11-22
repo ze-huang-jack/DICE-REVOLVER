@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface BackgroundProps {
@@ -44,58 +43,6 @@ export const Background: React.FC<BackgroundProps> = ({ isBoss = false }) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,#000_100%)] z-20"></div>
       {/* Scanlines */}
       <div className="absolute inset-0 bg-scanlines opacity-[0.05] z-20 pointer-events-none mix-blend-overlay"></div>
-
-      <style>{`
-        .perspective-container {
-            perspective: 300px;
-            transform-style: preserve-3d;
-        }
-
-        .grid-floor {
-            position: absolute;
-            width: 300%;
-            height: 200%;
-            left: -100%;
-            top: 0;
-            background-image: 
-                linear-gradient(to right, rgba(6, 182, 212, 0.15) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(6, 182, 212, 0.15) 1px, transparent 1px);
-            background-size: 50px 50px;
-            transform: rotateX(80deg) translateY(0) translateZ(0);
-            transform-origin: center top;
-            animation: gridScroll 2s linear infinite;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-        }
-
-        .grid-floor-boss {
-            background-image: 
-                linear-gradient(to right, rgba(220, 38, 38, 0.2) 2px, transparent 2px),
-                linear-gradient(to bottom, rgba(220, 38, 38, 0.2) 2px, transparent 2px);
-            background-size: 60px 60px;
-            animation: gridScroll 0.5s linear infinite; /* Faster */
-            box-shadow: 0 0 50px rgba(220, 38, 38, 0.1);
-        }
-
-        @keyframes gridScroll {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 50px; }
-        }
-
-        .bg-scanlines {
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.5));
-            background-size: 100% 4px;
-        }
-        
-        /* Marquee Animation for HUD */
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-marquee {
-            display: inline-block;
-            animation: marquee 15s linear infinite;
-        }
-      `}</style>
     </div>
   );
 };

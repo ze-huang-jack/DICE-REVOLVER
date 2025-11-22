@@ -18,8 +18,6 @@ const Pip = ({ style }: { style?: React.CSSProperties }) => (
 const FaceContent = ({ value }: { value: number }) => {
     if (value === 0) return null;
 
-    // Using CSS Grid for perfect alignment
-    // 3x3 Grid to place pips
     const getPips = () => {
         switch(value) {
             case 1: 
@@ -127,12 +125,6 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
               </div>
           ) : (
               <>
-                {/* 
-                   Calculated translateZ based on size.
-                   14 (3.5rem) -> 1.75rem
-                   16 (4rem) -> 2rem
-                   20 (5rem) -> 2.5rem
-                */}
                 <div className="die-face die-front"><FaceContent value={1} /></div>
                 <div className="die-face die-back"><FaceContent value={6} /></div>
                 <div className="die-face die-right"><FaceContent value={2} /></div>
@@ -143,38 +135,6 @@ export const Die: React.FC<DieProps> = ({ data, toggleLock, disabled }) => {
           )}
       </div>
         
-      <style>{`
-        .die-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; }
-        
-        /* Default (Mobile 14 / 3.5rem -> 1.75rem) */
-        .die-front { transform: translateZ(1.75rem); }
-        .die-back { transform: rotateY(180deg) translateZ(1.75rem); }
-        .die-right { transform: rotateY(90deg) translateZ(1.75rem); }
-        .die-left { transform: rotateY(-90deg) translateZ(1.75rem); }
-        .die-top { transform: rotateX(90deg) translateZ(1.75rem); }
-        .die-bottom { transform: rotateX(-90deg) translateZ(1.75rem); }
-
-        /* SM (16 / 4rem -> 2rem) */
-        @media (min-width: 640px) {
-            .die-front { transform: translateZ(2rem); }
-            .die-back { transform: rotateY(180deg) translateZ(2rem); }
-            .die-right { transform: rotateY(90deg) translateZ(2rem); }
-            .die-left { transform: rotateY(-90deg) translateZ(2rem); }
-            .die-top { transform: rotateX(90deg) translateZ(2rem); }
-            .die-bottom { transform: rotateX(-90deg) translateZ(2rem); }
-        }
-
-        /* MD (20 / 5rem -> 2.5rem) */
-        @media (min-width: 768px) {
-            .die-front { transform: translateZ(2.5rem); }
-            .die-back { transform: rotateY(180deg) translateZ(2.5rem); }
-            .die-right { transform: rotateY(90deg) translateZ(2.5rem); }
-            .die-left { transform: rotateY(-90deg) translateZ(2.5rem); }
-            .die-top { transform: rotateX(90deg) translateZ(2.5rem); }
-            .die-bottom { transform: rotateX(-90deg) translateZ(2.5rem); }
-        }
-      `}</style>
-
       {isLocked && (
           <div className="absolute inset-0 rounded-lg border-2 border-pink-500/50 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.3)] animate-pulse z-10 pointer-events-none"
                style={{ transform: 'scale(1.1)' }}>
