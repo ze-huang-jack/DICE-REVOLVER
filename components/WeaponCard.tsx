@@ -112,7 +112,7 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
   // Dynamic Multiplier Display
   const getMultDisplay = () => {
       if (weapon.id === 'SINGULARITY') return '50+';
-      if (weapon.id === 'FLUX_BEAM') return '40+';
+      if (weapon.id === 'FLUX_BEAM') return '30+'; // Adjusted base
       if (displayMultVal >= 100) return 'MAX';
       return `x${displayMultVal}`;
   };
@@ -120,6 +120,10 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
   const isTactical = weapon.id === 'TACTICAL_EXEC';
   const isUltimate = weapon.req === 'ULTIMATE' || ['EXCALIBUR', 'AEGIS_SYSTEM', 'RAGNAROK'].includes(weapon.id);
 
+  // For Tactical Exec, we always want to show the specific mission description if hovered OR if it's just idle to inform player
+  // But due to space, keep it in hover or click usually.
+  // Exception: Highlight if triggered?
+  
   return (
     <div 
         className={`
@@ -167,8 +171,8 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
               {[...Array(6)].map((_,i) => (
                   <div key={i} className="w-0.5 h-2.5 bg-slate-600 rounded-full"></div>
               ))}
-              {isTactical && !isHovered && !isDisabled && (
-                  <div className="absolute top-0 right-0 text-[8px] font-bold bg-green-500 text-black px-1 animate-pulse">任务</div>
+              {isTactical && !isDisabled && (
+                  <div className={`absolute top-0 right-0 text-[8px] font-bold px-1 animate-pulse ${isTriggered ? 'bg-green-500 text-black' : 'bg-slate-700 text-green-400'}`}>任务</div>
               )}
               {isTriggered && (
                   <div className="absolute top-0 left-0 w-full h-full bg-yellow-400/20 animate-pulse"></div>
@@ -193,10 +197,11 @@ export const WeaponCard: React.FC<WeaponCardProps> = ({ weapon, isActive = false
                 )}
 
                 {/* TACTICAL/DESC OVERLAY (Hover or Click) */}
-                {(isTactical || weapon.description) && isHovered && !isDisabled ? (
+                {(isTactical || weapon.description) && (isHovered || (isTactical && isTriggered)) && !isDisabled ? (
                     <div className="absolute inset-0 bg-slate-950/95 z-30 p-1.5 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-200">
                         <div className="text-[8px] text-green-500 font-mono uppercase mb-1 border-b border-green-500/30 w-full pb-0.5">{isTactical ? '当前任务' : '效果'}</div>
-                        <div className="text-xs font-bold text-white leading-tight my-auto">{weapon.description}</div>
+                        <div className={`text-xs font-bold leading-tight my-auto ${isTactical ? 'text-green-300' : 'text-white'}`}>{weapon.description}</div>
+                        {isTactical && isTriggered && <div className="text-[8px] text-yellow-400 mt-1 animate-pulse font-black">CONDITION MET</div>}
                     </div>
                 ) : null}
 

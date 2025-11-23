@@ -25,45 +25,53 @@ const MAX_REROLLS = 3;
 // --- DATA DEFINITIONS ---
 
 const WEAPONS: WeaponDef[] = [
-  // --- TIER 1: STARTERS ---
-  { id: 'SINGULARITY', name: '奇点', triggerType: 'FIVE_KIND', req: '5条 (5-Kind)', baseChips: 150, baseMult: 50, color: '#f43f5e' },
-  { id: 'FLUX_BEAM', name: '洪流', triggerType: 'BIG_STR', req: '大顺 (BigStr)', baseChips: 120, baseMult: 40, color: '#0ea5e9' },
-  { id: 'QUADRA', name: '四重奏', triggerType: 'FOUR_KIND', req: '4条 (4-Kind)', baseChips: 80, baseMult: 20, color: '#a855f7' },
-  { id: 'STRIKER', name: '突袭者', triggerType: 'SMALL_STR', req: '小顺 (SmStr)', baseChips: 50, baseMult: 10, color: '#22c55e' },
-  { id: 'TRINITY', name: '三位一体', triggerType: 'THREE_KIND', req: '3条 (3-Kind)', baseChips: 40, baseMult: 5, color: '#eab308' },
-  { id: 'FLAMETHROWER', name: 'HELL·地狱火', triggerType: 'FULL_HOUSE', req: '葫芦 (Full)', baseChips: 100, baseMult: 10, color: '#f97316' },
-  { id: 'VECTOR', name: '维克托', triggerType: 'TWO_PAIR', req: '两对 (2-Pair)', baseChips: 30, baseMult: 3, color: '#ec4899' },
-  { id: 'BUCKSHOT', name: '怒火', triggerType: 'PAIR', req: '一对 (Pair)', baseChips: 15, baseMult: 2, color: '#fb923c' },
-  { id: 'PEACEMAKER', name: '和平缔造者', triggerType: 'SCATTER', req: '散牌 (Scatter)', baseChips: 5, baseMult: 1, color: '#94a3b8' },
+  // --- TIER 1: STARTERS (Rebalanced) ---
+  { id: 'SINGULARITY', name: '奇点', triggerType: 'FIVE_KIND', req: '5条 (5-Kind)', baseChips: 150, baseMult: 40, color: '#f43f5e' }, // Nerfed to 40
+  { id: 'FLUX_BEAM', name: '洪流', triggerType: 'BIG_STR', req: '大顺 (BigStr)', baseChips: 120, baseMult: 30, color: '#0ea5e9' }, // Nerfed to 30
+  { id: 'QUADRA', name: '四重奏', triggerType: 'FOUR_KIND', req: '4条 (4-Kind)', baseChips: 80, baseMult: 30, color: '#a855f7' }, // Buffed to 30
+  { id: 'STRIKER', name: '突袭者', triggerType: 'SMALL_STR', req: '小顺 (SmStr)', baseChips: 50, baseMult: 15, color: '#22c55e' }, // Buffed to 15
+  { id: 'TRINITY', name: '三位一体', triggerType: 'THREE_KIND', req: '3条 (3-Kind)', baseChips: 40, baseMult: 10, color: '#eab308' }, // Buffed to 10
+  { id: 'FLAMETHROWER', name: 'HELL·地狱火', triggerType: 'FULL_HOUSE', req: '葫芦 (Full)', baseChips: 100, baseMult: 20, color: '#f97316' }, // Buffed to 20
+  { id: 'VECTOR', name: '维克托', triggerType: 'TWO_PAIR', req: '两对 (2-Pair)', baseChips: 30, baseMult: 8, color: '#ec4899' }, // Buffed to 8
+  { id: 'BUCKSHOT', name: '怒火', triggerType: 'PAIR', req: '一对 (Pair)', baseChips: 15, baseMult: 6, color: '#fb923c' }, // Buffed to 6
+  { id: 'PEACEMAKER', name: '和平缔造者', triggerType: 'SCATTER', req: '散牌 (Scatter)', baseChips: 5, baseMult: 4, color: '#94a3b8' }, // Buffed to 4
 
-  // --- TIER 2: EVOLUTIONS ---
+  // --- TIER 2: EVOLUTIONS (Scaled > 1.5x Base) ---
   { id: 'CROSSBOW', parentId: 'PEACEMAKER', name: '诸葛连弩', triggerType: 'SCATTER', req: '散牌', baseChips: 0, baseMult: 20, color: '#84cc16', isArtifact: true, description: '每次开火自动触发，无需条件' },
-  { id: 'BOUNTY_HUNTER', parentId: 'PEACEMAKER', name: '赏金猎人', triggerType: 'SCATTER', req: '散牌', baseChips: 20, baseMult: 2, color: '#facc15', isArtifact: true, description: '触发获得 5 筹码' },
-  { id: 'DESPERADO', parentId: 'PEACEMAKER', name: '亡命徒', triggerType: 'SCATTER', req: '散牌', baseChips: 10, baseMult: 5, color: '#71717a', isArtifact: true, description: '若无剩余重随次数，倍率x5' },
-  { id: 'MIDAS_HAND', parentId: 'BUCKSHOT', name: 'MIDAS·点金', triggerType: 'PAIR', req: '一对', baseChips: 50, baseMult: 5, color: '#fbbf24', isArtifact: true, description: '基础筹码 = 当前金币 / 2' },
-  { id: 'TITAN_GRIP', parentId: 'BUCKSHOT', name: '泰坦之握', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 30, color: '#b45309', isArtifact: true, description: '若对子是 [6,6]，倍率+30' },
-  { id: 'BUCKSHOT_NOVA', parentId: 'BUCKSHOT', name: '新星爆发', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 3, color: '#be185d', isArtifact: true, description: '额外增加等同于当前生命值的筹码' },
-  { id: 'TWIN_FANG', parentId: 'VECTOR', name: '双生毒牙', triggerType: 'TWO_PAIR', req: '两对', baseChips: 60, baseMult: 8, color: '#db2777', isArtifact: true, description: '触发两次伤害结算' },
-  { id: 'AKIMBO', parentId: 'VECTOR', name: '双持暴徒', triggerType: 'TWO_PAIR', req: '两对', baseChips: 50, baseMult: 5, color: '#475569', isArtifact: true, description: '本回合每使用一次重随，倍率+3' },
-  { id: 'RICOCHET', parentId: 'VECTOR', name: '跳弹', triggerType: 'TWO_PAIR', req: '两对', baseChips: 40, baseMult: 15, color: '#0ea5e9', isArtifact: true, description: '若两对数字相同 (四条)，伤害翻倍' },
-  { id: 'TACTICAL_EXEC', parentId: 'TRINITY', name: '战术终端', triggerType: 'THREE_KIND', req: '3条', baseChips: 100, baseMult: 15, color: '#10b981', isArtifact: true, description: '完成随机战术任务以获得额外奖励' },
-  { id: 'VAMPIRE_FANG', parentId: 'TRINITY', name: '鲜血祭仪', triggerType: 'THREE_KIND', req: '3条', baseChips: 60, baseMult: 10, color: '#991b1b', isArtifact: true, description: '造成伤害的 20% 转化为生命恢复' },
-  { id: 'TRI_FORCE', parentId: 'TRINITY', name: '三角力量', triggerType: 'THREE_KIND', req: '3条', baseChips: 80, baseMult: 25, color: '#eab308', isArtifact: true, description: '若骰子点数为奇数，伤害翻倍' },
-  { id: 'OMNI_BURST', parentId: 'QUADRA', name: '全域轰炸', triggerType: 'FOUR_KIND', req: '4+条', baseChips: 200, baseMult: 50, color: '#d946ef', isArtifact: true, description: '4条、5条、6条均可触发，且倍率极高' },
-  { id: 'PLASMA_CANNON', parentId: 'QUADRA', name: '等离子炮', triggerType: 'FOUR_KIND', req: '4条', baseChips: 500, baseMult: 20, color: '#3b82f6', isArtifact: true, description: '基础筹码 +400' },
+  { id: 'BOUNTY_HUNTER', parentId: 'PEACEMAKER', name: '赏金猎人', triggerType: 'SCATTER', req: '散牌', baseChips: 20, baseMult: 6, color: '#facc15', isArtifact: true, description: '触发获得 5 筹码' },
+  { id: 'DESPERADO', parentId: 'PEACEMAKER', name: '亡命徒', triggerType: 'SCATTER', req: '散牌', baseChips: 10, baseMult: 8, color: '#71717a', isArtifact: true, description: '若无剩余重随次数，倍率x5' },
+  
+  { id: 'MIDAS_HAND', parentId: 'BUCKSHOT', name: 'MIDAS·点金', triggerType: 'PAIR', req: '一对', baseChips: 50, baseMult: 10, color: '#fbbf24', isArtifact: true, description: '基础筹码 = 当前金币 / 2' },
+  { id: 'TITAN_GRIP', parentId: 'BUCKSHOT', name: '泰坦之握', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 45, color: '#b45309', isArtifact: true, description: '若对子是 [6,6]，倍率+30' },
+  { id: 'BUCKSHOT_NOVA', parentId: 'BUCKSHOT', name: '新星爆发', triggerType: 'PAIR', req: '一对', baseChips: 100, baseMult: 10, color: '#be185d', isArtifact: true, description: '额外增加等同于当前生命值的筹码' },
+  
+  { id: 'TWIN_FANG', parentId: 'VECTOR', name: '双生毒牙', triggerType: 'TWO_PAIR', req: '两对', baseChips: 60, baseMult: 15, color: '#db2777', isArtifact: true, description: '触发两次伤害结算' },
+  { id: 'AKIMBO', parentId: 'VECTOR', name: '双持暴徒', triggerType: 'TWO_PAIR', req: '两对', baseChips: 50, baseMult: 12, color: '#475569', isArtifact: true, description: '本回合每使用一次重随，倍率+3' },
+  { id: 'RICOCHET', parentId: 'VECTOR', name: '跳弹', triggerType: 'TWO_PAIR', req: '两对', baseChips: 40, baseMult: 25, color: '#0ea5e9', isArtifact: true, description: '若两对数字相同 (四条)，伤害翻倍' },
+  
+  { id: 'TACTICAL_EXEC', parentId: 'TRINITY', name: '战术终端', triggerType: 'THREE_KIND', req: '3条', baseChips: 100, baseMult: 30, color: '#10b981', isArtifact: true, description: '完成随机战术任务' },
+  { id: 'VAMPIRE_FANG', parentId: 'TRINITY', name: '鲜血祭仪', triggerType: 'THREE_KIND', req: '3条', baseChips: 60, baseMult: 15, color: '#991b1b', isArtifact: true, description: '造成伤害的 20% 转化为生命恢复' },
+  { id: 'TRI_FORCE', parentId: 'TRINITY', name: '三角力量', triggerType: 'THREE_KIND', req: '3条', baseChips: 80, baseMult: 40, color: '#eab308', isArtifact: true, description: '若骰子点数为奇数，伤害翻倍' },
+  
+  { id: 'OMNI_BURST', parentId: 'QUADRA', name: '全域轰炸', triggerType: 'FOUR_KIND', req: '4+条', baseChips: 200, baseMult: 60, color: '#d946ef', isArtifact: true, description: '4条、5条、6条均可触发，且倍率极高' },
+  { id: 'PLASMA_CANNON', parentId: 'QUADRA', name: '等离子炮', triggerType: 'FOUR_KIND', req: '4条', baseChips: 500, baseMult: 50, color: '#3b82f6', isArtifact: true, description: '基础筹码 +400' },
   { id: 'RAILGUN', parentId: 'QUADRA', name: '电磁轨道炮', triggerType: 'FOUR_KIND', req: '4条', baseChips: 150, baseMult: 80, color: '#22d3ee', isArtifact: true, description: '无视护盾 (倍率极高)' },
-  { id: 'EVENT_HORIZON', parentId: 'SINGULARITY', name: '视界线', triggerType: 'SIX_KIND', req: '6条', baseChips: 500, baseMult: 200, color: '#4c1d95', isArtifact: true, description: '需集齐6条，伤害毁灭性' },
+  
+  { id: 'EVENT_HORIZON', parentId: 'SINGULARITY', name: '视界线', triggerType: 'SIX_KIND', req: '6条', baseChips: 500, baseMult: 80, color: '#4c1d95', isArtifact: true, description: '需集齐6条，伤害毁灭性' }, // Nerfed to 80
   { id: 'BLACK_HOLE', parentId: 'SINGULARITY', name: '黑洞发生器', triggerType: 'FIVE_KIND', req: '5条', baseChips: 200, baseMult: 50, color: '#1e1b4b', isArtifact: true, description: '获得 500 点护盾' },
-  { id: 'SUPERNOVA', parentId: 'SINGULARITY', name: '超新星', triggerType: 'FIVE_KIND', req: '5条', baseChips: 300, baseMult: 100, color: '#f59e0b', isArtifact: true, description: '若点数为 [6]，伤害 x5' },
+  { id: 'SUPERNOVA', parentId: 'SINGULARITY', name: '超新星', triggerType: 'FIVE_KIND', req: '5条', baseChips: 300, baseMult: 50, color: '#f59e0b', isArtifact: true, description: '若点数为 [6]，伤害 x5' }, // Nerfed to 50
+  
   { id: 'CHRONOS', parentId: 'STRIKER', name: 'TIME·时之轮', triggerType: 'SMALL_STR', req: '小顺', baseChips: 0, baseMult: 1, color: '#2dd4bf', isArtifact: true, description: '再次结算本轮所有已触发的伤害' },
-  { id: 'ASSASSIN', parentId: 'STRIKER', name: '暗影刺客', triggerType: 'SMALL_STR', req: '小顺', baseChips: 80, baseMult: 20, color: '#0f172a', isArtifact: true, description: '必定暴击' },
-  { id: 'FLASH_STEP', parentId: 'STRIKER', name: '瞬步', triggerType: 'SMALL_STR', req: '小顺', baseChips: 150, baseMult: 30, color: '#e2e8f0', isArtifact: true, description: '若在第1次投掷后触发，伤害 x3' },
-  { id: 'PRISM_BEAM', parentId: 'FLUX_BEAM', name: '光棱塔', triggerType: 'SUPER_STR', req: '大满贯 (1-6)', baseChips: 300, baseMult: 100, color: '#06b6d4', isArtifact: true, description: '需集齐1-6点，终极激光' },
-  { id: 'ORBITAL_CANNON', parentId: 'FLUX_BEAM', name: '轨道打击', triggerType: 'BIG_STR', req: '大顺', baseChips: 150, baseMult: 50, color: '#6366f1', isArtifact: true, description: '倍率随回合数增加 (x3/turn)' },
+  { id: 'ASSASSIN', parentId: 'STRIKER', name: '暗影刺客', triggerType: 'SMALL_STR', req: '小顺', baseChips: 80, baseMult: 30, color: '#0f172a', isArtifact: true, description: '必定暴击' },
+  { id: 'FLASH_STEP', parentId: 'STRIKER', name: '瞬步', triggerType: 'SMALL_STR', req: '小顺', baseChips: 150, baseMult: 45, color: '#e2e8f0', isArtifact: true, description: '若在第1次投掷后触发，伤害 x3' },
+  
+  { id: 'PRISM_BEAM', parentId: 'FLUX_BEAM', name: '光棱塔', triggerType: 'SUPER_STR', req: '大满贯 (1-6)', baseChips: 300, baseMult: 60, color: '#06b6d4', isArtifact: true, description: '需集齐1-6点，终极激光' }, // Nerfed to 60
+  { id: 'ORBITAL_CANNON', parentId: 'FLUX_BEAM', name: '轨道打击', triggerType: 'BIG_STR', req: '大顺', baseChips: 150, baseMult: 30, color: '#6366f1', isArtifact: true, description: '每5关倍率+10' }, // Base 30
   { id: 'HYPER_BEAM', parentId: 'FLUX_BEAM', name: '破坏死光', triggerType: 'BIG_STR', req: '大顺', baseChips: 250, baseMult: 80, color: '#dc2626', isArtifact: true, description: '消耗50护盾 (无则免费)' },
+  
   { id: 'INFERNO', parentId: 'FLAMETHROWER', name: '焦土政策', triggerType: 'DOUBLE_TRIPLE', req: '双三条', baseChips: 200, baseMult: 50, color: '#ea580c', isArtifact: true, description: '需两个三条，燃烧一切' },
   { id: 'MELTDOWN', parentId: 'FLAMETHROWER', name: '堆芯熔毁', triggerType: 'FULL_HOUSE', req: '葫芦', baseChips: 150, baseMult: 40, color: '#84cc16', isArtifact: true, description: '消耗所有护盾，每点护盾增加伤害' },
-  { id: 'NAPALM', parentId: 'FLAMETHROWER', name: '凝固汽油', triggerType: 'FULL_HOUSE', req: '葫芦', baseChips: 120, baseMult: 30, color: '#f97316', isArtifact: true, description: '若对子是 [6,6]，倍率 x3' },
+  { id: 'NAPALM', parentId: 'FLAMETHROWER', name: '凝固汽油', triggerType: 'FULL_HOUSE', req: '葫芦', baseChips: 120, baseMult: 45, color: '#f97316', isArtifact: true, description: '若对子是 [6,6]，倍率 x3' },
 
   // --- TIER 3: ULTIMATES ---
   { id: 'EXCALIBUR', name: '誓约·胜利', triggerType: 'EIGHT_KIND', req: '8条 (8-Kind)', baseChips: 999, baseMult: 999, color: '#fde047', isArtifact: true, description: '王者之剑: 需8个相同点数' },
@@ -125,6 +133,51 @@ const getHpMultiplier = (level: number, difficulty: Difficulty): number => {
 const getDamageMultiplier = (difficulty: Difficulty): number => {
     return difficulty === 'ROOKIE' ? 2.0 : 3.0; // +100% vs +200%
 }
+
+const generateMission = (level: number): TacticalMission => {
+    const types: TacticalMission['type'][] = ['SUM_GT', 'SUM_LT', 'ALL_ODD', 'ALL_EVEN', 'HAS_PAIR', 'NO_ONES'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    let targetVal = 0;
+    let desc = '';
+    
+    switch(type) {
+        case 'SUM_GT': 
+            targetVal = 15 + Math.floor(Math.random() * 10);
+            desc = `点数总和 > ${targetVal}`;
+            break;
+        case 'SUM_LT':
+            targetVal = 15 + Math.floor(Math.random() * 5);
+            desc = `点数总和 < ${targetVal}`;
+            break;
+        case 'ALL_ODD':
+            desc = '所有点数为奇数';
+            break;
+        case 'ALL_EVEN':
+            desc = '所有点数为偶数';
+            break;
+        case 'HAS_PAIR':
+            targetVal = Math.ceil(Math.random() * 6);
+            desc = `包含一对 [${targetVal}]`;
+            break;
+        case 'NO_ONES':
+            desc = '不包含点数 1';
+            break;
+    }
+    return { type, targetVal, desc, rewardMult: 1 };
+};
+
+const checkMission = (mission: TacticalMission, dice: number[]): boolean => {
+    const sum = dice.reduce((a,b)=>a+b, 0);
+    switch(mission.type) {
+        case 'SUM_GT': return sum > (mission.targetVal || 0);
+        case 'SUM_LT': return sum < (mission.targetVal || 0);
+        case 'ALL_ODD': return dice.length > 0 && dice.every(d => d % 2 !== 0);
+        case 'ALL_EVEN': return dice.length > 0 && dice.every(d => d % 2 === 0);
+        case 'HAS_PAIR': return dice.filter(d => d === (mission.targetVal || 6)).length >= 2;
+        case 'NO_ONES': return dice.length > 0 && !dice.includes(1);
+        default: return false;
+    }
+};
 
 const CHIP_POOL: CyberwareDef[] = [
     {
@@ -491,7 +544,8 @@ export default function App() {
       bossPhase: 1,
       turn: 1,
       enemyType: 'BOSS_1',
-      maxCyberwareSlots: 3
+      maxCyberwareSlots: 3,
+      tacticalMission: generateMission(1)
     };
     
     initialState.enemyIntent = generateIntent(1, 'BOSS_1', initialState.dice, 1, difficulty);
@@ -684,8 +738,8 @@ export default function App() {
       if (weaponId === 'SUPERNOVA' && diceValues[0] === 6) baseMult *= 5;
       if (weaponId === 'FLUX_BEAM' || weaponId === 'PRISM_BEAM') baseMult += (diceValues.length * 5);
       
-      // Rebalance: Orbital Cannon scaled down
-      if (weaponId === 'ORBITAL_CANNON') baseMult += (gameState.turn * 3); // Reduced from 10 to 3
+      // Rebalance: Orbital Cannon scaling
+      if (weaponId === 'ORBITAL_CANNON') baseMult += (Math.floor(gameState.level / 5) * 10);
       
       if (weaponId === 'DESPERADO' && gameState.rerolls === 0) baseMult *= 5;
       if (weaponId === 'MIDAS_HAND') baseChips += Math.floor(gameState.gold * 0.5);
@@ -1060,6 +1114,16 @@ export default function App() {
             const weaponDef = WEAPONS.find(w => w.id === hand.weapon);
             const isCrit = score.total >= 50; 
 
+            // TACTICAL MISSION CHECK
+            let missionBonus = false;
+            if (hand.weapon === 'TACTICAL_EXEC' && gameState.tacticalMission) {
+                if (checkMission(gameState.tacticalMission, hand.dice)) {
+                    missionBonus = true;
+                    // Already High Mult, add visual
+                    setDamagePopups(prev => [...prev, {id: Date.now(), value: 0, x:0, y:-50, color: '#10b981', isCrit: true, label: 'MISSION COMPLETE'}]);
+                }
+            }
+
             await new Promise(r => setTimeout(r, 200));
             let sfxType: 'KINETIC' | 'ENERGY' | 'EXPLOSIVE' | 'MELEE' = 'KINETIC';
             if(['PLASMA','VOID','FLUX_BEAM','PRISM_BEAM','EVENT_HORIZON','AEGIS_SYSTEM','RAILGUN','HYPER_BEAM'].includes(hand.weapon)) sfxType = 'ENERGY';
@@ -1373,7 +1437,7 @@ export default function App() {
                     enemyIntent: generateIntent(nextLevel, nextType, prev.dice, 1, prev.difficulty),
                     bossPhase: 1,
                     dice: prev.dice.map(d => ({ ...d, isLocked: false, value: 0 as DieValue })),
-                    tacticalMission: undefined
+                    tacticalMission: generateMission(nextLevel)
                 };
                 return startPlayerTurn(s); 
             });
@@ -1421,10 +1485,18 @@ export default function App() {
                 <div className="flex gap-3 overflow-x-auto pb-4 pt-2 scrollbar-hide mask-linear-fade px-4 min-h-[150px] items-end">
                     {WEAPONS.filter(w => gameState.unlockedWeapons.includes(w.id)).map(w => {
                         const effective = getEffectiveWeaponStats(w.id, gameState);
+                        let missionSatisfied = false;
+                        if (w.id === 'TACTICAL_EXEC' && gameState.tacticalMission) {
+                             missionSatisfied = checkMission(gameState.tacticalMission, triggeredHands.find(h=>h.weapon==='TACTICAL_EXEC')?.dice || []);
+                        }
+
                         return (
                             <WeaponCard 
                                 key={w.id} 
-                                weapon={w} 
+                                weapon={w.id === 'TACTICAL_EXEC' && gameState.tacticalMission 
+                                    ? { ...w, description: gameState.tacticalMission.desc } // Override description for card display
+                                    : w
+                                } 
                                 isActive={true} 
                                 isFiring={activeWeaponId === w.id} 
                                 isDisabled={gameState.disabledWeapons.includes(w.id)}
