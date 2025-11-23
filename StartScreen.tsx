@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Difficulty } from '../types';
-import { Skull, Award, Zap, BookOpen, Terminal, Infinity, HelpCircle, X } from 'lucide-react';
+import { Skull, Award, Zap, BookOpen, Terminal, Infinity, HelpCircle, X, Shield, Heart } from 'lucide-react';
 import { SwordIcon, ShieldIcon, CoinIcon } from './Icons';
 
 interface StartScreenProps {

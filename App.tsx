@@ -102,7 +102,7 @@ const CYBERWARE_POOL: CyberwareDef[] = [
 
 // Helper for HP Scaling
 const getHpMultiplier = (level: number, difficulty: Difficulty): number => {
-    if (level <= 15) return 1.0; 
+    if (level <= 15) return 0.4; // Reduced from 1.0 (60% reduction)
     
     // Shared table for 16-60
     let mult = 1;
@@ -456,7 +456,7 @@ export default function App() {
     soundManager.startBgm('NORMAL');
     const startHp = difficulty === 'ROOKIE' ? 200 : 50;
     let initialEnemyHp = 2000;
-    initialEnemyHp = Math.floor(initialEnemyHp * 0.3); // Level 1 scaling
+    initialEnemyHp = Math.floor(initialEnemyHp * 0.12); // Level 1 scaling (-60% HP)
 
     const startWeapons: WeaponType[] = [
         'PEACEMAKER', 'BUCKSHOT', 'VECTOR', 'TRINITY', 'QUADRA', 
