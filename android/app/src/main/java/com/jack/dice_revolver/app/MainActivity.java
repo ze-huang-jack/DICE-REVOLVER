@@ -1,4 +1,4 @@
-package com.example.app;
+package com.jack.dice_revolver.app;
 
 import com.getcapacitor.BridgeActivity;
 
