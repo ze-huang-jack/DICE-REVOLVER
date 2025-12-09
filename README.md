@@ -21,5 +21,5 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Do2uh_jaBjAIWhL562gKEi
 
 
 
-#here is the keystore generation command for example#
+##here is the keystore generation command for example##
    keytool -genkey -v -keystore dice-revolver-release-prod-2025.keystore -alias dice-release-prod -keyalg RSA -keysize 2048 -validity 10000
