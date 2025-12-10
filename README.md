@@ -28,7 +28,7 @@ keytool -genkey -v -keystore dice-revolver-release-prod-2025.keystore -alias dic
 
 
 ## for tauri build
-1. npm run
+1. npm run build
 2. npm install -g @tauri-apps/cli
 3. tauri init
 4. tauri dev
